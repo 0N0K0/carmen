@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@apollo/client": "^3.14.1",
+    "@fontsource/parisienne": "^5.2.8",
+    "@fontsource/roboto": "^5.2.10",
+    "@fontsource/roboto-condensed": "^5.2.8",
     "@mantine/core": "^9.4.1",
     "@mantine/hooks": "^9.4.1",
     "@mantine/modals": "^9.4.1",
