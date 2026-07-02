@@ -2,6 +2,7 @@ import {
   luminance,
   parseThemeColor,
   type MantineColor,
+  type MantineColorScheme,
   type MantineGradient,
   type MantineTheme,
 } from '@mantine/core';
@@ -13,6 +14,8 @@ import { getColorScheme } from '../theme/palette/palette.utils';
  * @param {("gradient" | "filled")} props.variant La variante du composant (gradient ou filled).
  * @param {MantineColor} [props.color] La couleur du composant (optionnelle).
  * @param {MantineGradient} [props.gradient] Le gradient du composant (optionnel).
+ * @param {boolean} [props.autoContrast] Active ou désactive le contraste automatique.
+ * @param {Exclude<MantineColorScheme, "auto">} [props.colorScheme] Schéma de couleurs courant. Si absent, lu depuis le DOM (snapshot non réactif).
  * @returns {string} La couleur de contraste (noir ou blanc) en fonction des paramètres.
  */
 export function getContrastColor({
@@ -21,14 +24,16 @@ export function getContrastColor({
   color,
   gradient,
   autoContrast,
+  colorScheme: providedColorScheme,
 }: {
   theme: MantineTheme;
   variant: 'gradient' | 'filled';
   color?: MantineColor;
   gradient?: MantineGradient;
   autoContrast?: boolean;
+  colorScheme?: Exclude<MantineColorScheme, 'auto'>;
 }): string {
-  const colorScheme = getColorScheme();
+  const colorScheme = providedColorScheme ?? getColorScheme();
 
   const defaultColor =
     theme.colors[theme.primaryColor][
@@ -36,12 +41,6 @@ export function getContrastColor({
         ? theme.primaryShade[colorScheme]
         : theme.primaryShade
     ];
-
-  const parsedDefaultColor = parseThemeColor({
-    color: defaultColor,
-    theme,
-    colorScheme,
-  });
 
   const parsedColor = parseThemeColor({
     color: color || defaultColor,
@@ -53,7 +52,7 @@ export function getContrastColor({
     typeof autoContrast === 'boolean' ? autoContrast : theme.autoContrast;
 
   if (!_autoContrast) {
-    return parsedDefaultColor.isLight
+    return parsedColor.isLight
       ? 'var(--mantine-color-black)'
       : 'var(--mantine-color-white)';
   }

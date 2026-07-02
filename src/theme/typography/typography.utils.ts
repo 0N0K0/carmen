@@ -1,7 +1,6 @@
 /**
  * Génère un objet de variables CSS à partir d'un objet de typographie donné.
  * @param {Record<string, any>} typography L'objet de typographie à parcourir pour générer les variables CSS.
- * @param {string} [prefix="onoko"] Le préfixe à utiliser pour les noms des variables CSS. Par défaut, "onoko" est utilisé, mais il peut être personnalisé pour éviter les conflits avec d'autres bibliothèques ou pour mieux correspondre au nom du projet.
  * @returns {Record<string, string>} Un objet contenant les variables CSS générées, où les clés sont les noms des variables CSS et les valeurs sont les valeurs correspondantes extraites de l'objet de typographie.
  */
 export function createTypographyVariables(
@@ -16,22 +15,22 @@ export function createTypographyVariables(
    */
   function visit(obj: Record<string, any>, path: string[] = []) {
     const isTypographyToken =
-      obj && typeof obj === "object" && "fontFamily" in obj;
+      obj && typeof obj === 'object' && 'fontFamily' in obj;
 
     if (isTypographyToken) {
-      const prefix = `--onoko-${path.join("-")}`;
+      const prefix = `--onoko-${path.join('-')}`;
 
       result[`${prefix}-font-family`] = obj.fontFamily;
-      result[`${prefix}-font-weight`] = obj.fontWeight ?? "regular";
-      result[`${prefix}-font-style`] = obj.fontStyle ?? "normal";
-      result[`${prefix}-letter-spacing`] = obj.letterSpacing ?? "normal";
-      result[`${prefix}-text-transform`] = obj.textTransform ?? "none";
+      result[`${prefix}-font-weight`] = obj.fontWeight ?? 'normal';
+      result[`${prefix}-font-style`] = obj.fontStyle ?? 'normal';
+      result[`${prefix}-letter-spacing`] = obj.letterSpacing ?? 'normal';
+      result[`${prefix}-text-transform`] = obj.textTransform ?? 'none';
 
       return;
     }
 
     for (const [key, value] of Object.entries(obj)) {
-      if (value && typeof value === "object") {
+      if (value && typeof value === 'object') {
         visit(value, [...path, key]);
       }
     }

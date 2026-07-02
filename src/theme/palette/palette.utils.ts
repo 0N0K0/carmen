@@ -97,16 +97,14 @@ export function createPalette({
     throw new Error(`Invalid valueStop: ${valueStop}`);
   }
 
-  const hueScale = allSteps.map((step) => {
-    const stopIndex = allSteps.indexOf(step);
+  const hueScale = allSteps.map((step, stopIndex) => {
     const diff = Math.abs(stopIndex - valueStopIndex);
     const tweakValue = h ? diff * h : 0;
     return { step, tweak: tweakValue };
   });
 
   // 2. Échelle de saturation
-  const saturationScale = allSteps.map((step) => {
-    const stopIndex = allSteps.indexOf(step);
+  const saturationScale = allSteps.map((step, stopIndex) => {
     const diff = Math.abs(stopIndex - valueStopIndex);
     const tweakValue = s ? Math.round((diff + 1) * s * (1 + diff / 10)) : 0;
     return { step, tweak: Math.min(tweakValue, 100) };

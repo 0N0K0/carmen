@@ -43,6 +43,10 @@ export const TYPOGRAPHY_CONFIG = {
     extrabold: '800',
     black: '900',
   },
+  /**
+   * Rôles typographiques nommés (body, subtitle, heading, meta, accent) avec leurs tokens CSS.
+   * @returns {ThemeTypography} Les tokens de style par rôle.
+   */
   get typography() {
     const headingInterface = {
       fontWeight: this.fontWeights.black,
@@ -74,6 +78,10 @@ export const TYPOGRAPHY_CONFIG = {
       },
     };
   },
+  /**
+   * Configuration des headings Mantine (h1–h6) avec les tailles et hauteurs de ligne du projet.
+   * @returns {object} Configuration des headings pour MantineProvider.
+   */
   get headings() {
     return {
       fontFamily: this.fontFamilyInterface,

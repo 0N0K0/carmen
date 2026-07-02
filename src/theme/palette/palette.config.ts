@@ -62,23 +62,10 @@ const colors: Record<string, MantineColorsTuple> = {
     lMax: 80,
   }) as MantineColorsTuple,
   darkElevations: darkElevations as unknown as MantineColorsTuple,
-  core: createPalette({ value: '#0DB9F2' }) as MantineColorsTuple,
-  support: createPalette({ value: '#4DB2A1' }) as MantineColorsTuple,
-  get accent() {
-    return this.golden;
-  },
-  get info() {
-    return this.lightBlue;
-  },
-  get success() {
-    return this.lime;
-  },
-  get warning() {
-    return this.amber;
-  },
-  get error() {
-    return this.red;
-  },
+  info: palette.lightBlue,
+  success: palette.lime,
+  warning: palette.amber,
+  error: palette.red,
 };
 
 const opacities = {
@@ -100,16 +87,16 @@ const opacities = {
 export const COLOR_CONFIG = {
   colors,
   primaryShade: { light: 5, dark: 6 } as const,
-  primaryColor: 'core',
+  primaryColor: 'golden',
   autoContrast: true,
-  defaultGradient: {
-    from: 'core',
-    to: 'support',
-    deg: 135,
-  },
   opacities,
 };
 
+/**
+ * Génère les variables CSS de couleur pour chaque schéma (light/dark), en surchargeant les variables Mantine par défaut.
+ * @param {MantineTheme} theme Le thème Mantine.
+ * @returns {{ light: Record<string, string>; dark: Record<string, string> }} Variables CSS pour les deux schémas.
+ */
 export const COLOR_SCHEME_PALETTE_RESOLVER = (
   theme: MantineTheme,
 ): {
@@ -135,6 +122,12 @@ export const COLOR_SCHEME_PALETTE_RESOLVER = (
   ): Record<string, string> => {
     const base = baseShade(scheme);
 
+    /**
+     * Calcule un index de nuance décalé, borné entre 0 et shades.length - 1.
+     * @param {number} shade L'index de départ.
+     * @param {number} dir Le décalage (positif = plus sombre si shade >= 5, négatif sinon).
+     * @returns {number} L'index borné.
+     */
     const offset = (shade: number, dir: number): number => {
       const offset = shade >= 5 ? shade + dir : shade - dir;
       if (offset < 0) {
@@ -198,6 +191,8 @@ export const COLOR_SCHEME_PALETTE_RESOLVER = (
   ): Record<string, string> => {
     if (scheme === 'light') {
       return {
+        [`--mantine-color-${color}-light`]: alpha(shades[5], 0.1),
+        [`--mantine-color-${color}-light-hover`]: alpha(shades[5], 0.15),
         [`--mantine-color-${color}-light-color`]: shades[8],
         [`--onoko-color-${color}-light-focus`]: alpha(shades[4], 0.3),
         [`--onoko-color-${color}-light-touch`]: alpha(shades[4], 0.6),
