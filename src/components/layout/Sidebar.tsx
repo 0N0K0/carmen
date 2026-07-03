@@ -85,7 +85,7 @@ export function Sidebar() {
   }
 
   return (
-    <AppShell.Navbar style={{ overflow: 'visible', position: 'relative' }}>
+    <AppShell.Navbar style={{ overflow: 'visible' }}>
       {/* Poignée de redimensionnement sur le bord droit */}
       <Box
         pos="absolute"
