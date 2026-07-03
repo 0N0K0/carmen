@@ -4,7 +4,8 @@ import {
   AppShell,
   Box,
   Flex,
-  SegmentedControl,
+  Scroller,
+  Tabs,
   TextInput,
   Tooltip,
 } from '@mantine/core';
@@ -146,15 +147,16 @@ function SidebarNormal({
             <Accordion.Control>Bibliothèque</Accordion.Control>
             <Accordion.Panel>
               <Flex direction="column" gap="xs">
-                <SegmentedControl
-                  size="xs"
-                  data={[
-                    { label: 'Playlists', value: 'playlists' },
-                    { label: 'Albums', value: 'albums' },
-                    { label: 'Artistes', value: 'artistes' },
-                    { label: 'Podcasts', value: 'podcasts' },
-                  ]}
-                />
+                <Tabs defaultValue="playlists">
+                  <Tabs.List>
+                    <Scroller>
+                      <Tabs.Tab value="playlists">Playlists</Tabs.Tab>
+                      <Tabs.Tab value="albums">Albums</Tabs.Tab>
+                      <Tabs.Tab value="artistes">Artistes</Tabs.Tab>
+                      <Tabs.Tab value="podcasts">Podcasts</Tabs.Tab>
+                    </Scroller>
+                  </Tabs.List>
+                </Tabs>
                 <TextInput
                   size="xs"
                   placeholder="Rechercher dans la bibliothèque…"
