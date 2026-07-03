@@ -11,7 +11,7 @@ import {
 import {
   ArrowLineLeftIcon,
   ArrowLineRightIcon,
-  ArrowSquareOutIcon,
+  ArrowsOutSimpleIcon,
   BookmarkSimpleIcon,
   GridFourIcon,
   ListIcon,
@@ -60,7 +60,8 @@ export function Sidebar() {
    * @param {React.PointerEvent<HTMLDivElement>} e Événement pointermove.
    */
   function handleResizeMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (!e.currentTarget.hasPointerCapture(e.pointerId) || !dragStart.current) return;
+    if (!e.currentTarget.hasPointerCapture(e.pointerId) || !dragStart.current)
+      return;
     const raw = dragStart.current.width + (e.clientX - dragStart.current.x);
     setSidebarWidth(snapSidebarWidth(raw));
   }
@@ -70,14 +71,17 @@ export function Sidebar() {
    * @param {React.PointerEvent<HTMLDivElement>} e Événement pointerup.
    */
   function handleResizeEnd(e: React.PointerEvent<HTMLDivElement>) {
-    if (!e.currentTarget.hasPointerCapture(e.pointerId) || !dragStart.current) return;
+    if (!e.currentTarget.hasPointerCapture(e.pointerId) || !dragStart.current)
+      return;
     e.currentTarget.releasePointerCapture(e.pointerId);
     dragStart.current = null;
   }
 
   /** Bascule entre vue réduite (72 px) et vue normale minimale (280 px). */
   function toggleReduced() {
-    setSidebarWidth(isReduced ? SIDEBAR_WIDTH_NORMAL_MIN : SIDEBAR_WIDTH_REDUCED);
+    setSidebarWidth(
+      isReduced ? SIDEBAR_WIDTH_NORMAL_MIN : SIDEBAR_WIDTH_REDUCED,
+    );
   }
 
   return (
@@ -99,7 +103,11 @@ export function Sidebar() {
       {isReduced ? (
         <Flex direction="column" align="center" gap="xs" pt="xs">
           <Tooltip label="Agrandir la sidebar" position="right">
-            <ActionIcon variant="subtle" onClick={toggleReduced} aria-label="Agrandir la sidebar">
+            <ActionIcon
+              variant="subtle"
+              onClick={toggleReduced}
+              aria-label="Agrandir la sidebar"
+            >
               <ArrowLineRightIcon weight="bold" />
             </ActionIcon>
           </Tooltip>
@@ -119,7 +127,12 @@ export function Sidebar() {
         <Box p="xs">
           <Flex justify="flex-end" mb={4}>
             <Tooltip label="Réduire la sidebar" position="right">
-              <ActionIcon variant="subtle" size="sm" onClick={toggleReduced} aria-label="Réduire la sidebar">
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={toggleReduced}
+                aria-label="Réduire la sidebar"
+              >
                 <ArrowLineLeftIcon weight="bold" />
               </ActionIcon>
             </Tooltip>
@@ -131,7 +144,9 @@ export function Sidebar() {
                 Raccourcis
               </Accordion.Control>
               <Accordion.Panel>
-                <Box c="dimmed" fz="sm">Aucun raccourci</Box>
+                <Box c="dimmed" fz="sm">
+                  Aucun raccourci
+                </Box>
               </Accordion.Panel>
             </Accordion.Item>
 
@@ -152,27 +167,44 @@ export function Sidebar() {
                         { label: 'Podcasts', value: 'podcasts' },
                       ]}
                     />
-                    <TextInput size="xs" placeholder="Rechercher dans la bibliothèque…" />
+                    <TextInput
+                      size="xs"
+                      placeholder="Rechercher dans la bibliothèque…"
+                    />
                     <Flex justify="space-between" align="center">
                       <Tooltip label="Trier" position="top">
-                        <ActionIcon variant="subtle" size="sm" aria-label="Trier">
+                        <ActionIcon
+                          variant="subtle"
+                          size="sm"
+                          aria-label="Trier"
+                        >
                           <SortAscendingIcon weight="regular" />
                         </ActionIcon>
                       </Tooltip>
                       <Flex gap="xs">
                         <Tooltip label="Vue liste" position="top">
-                          <ActionIcon variant="subtle" size="sm" aria-label="Vue liste">
+                          <ActionIcon
+                            variant="subtle"
+                            size="sm"
+                            aria-label="Vue liste"
+                          >
                             <ListIcon weight="regular" />
                           </ActionIcon>
                         </Tooltip>
                         <Tooltip label="Vue grille" position="top">
-                          <ActionIcon variant="subtle" size="sm" aria-label="Vue grille">
+                          <ActionIcon
+                            variant="subtle"
+                            size="sm"
+                            aria-label="Vue grille"
+                          >
                             <GridFourIcon weight="regular" />
                           </ActionIcon>
                         </Tooltip>
                       </Flex>
                     </Flex>
-                    <Box c="dimmed" fz="sm">Aucun élément</Box>
+                    <Box c="dimmed" fz="sm">
+                      Aucun élément
+                    </Box>
                   </Flex>
                 </Accordion.Panel>
               </Accordion.Item>
@@ -180,16 +212,29 @@ export function Sidebar() {
               <Flex
                 gap={4}
                 pos="absolute"
-                style={{ top: 0, right: '2.5rem', height: '2.75rem', alignItems: 'center' }}
+                style={{
+                  top: 0,
+                  right: '2.5rem',
+                  height: '2.75rem',
+                  alignItems: 'center',
+                }}
               >
                 <Tooltip label="Ajouter" position="top">
-                  <ActionIcon variant="subtle" size="sm" aria-label="Ajouter à la bibliothèque">
+                  <ActionIcon
+                    variant="subtle"
+                    size="sm"
+                    aria-label="Ajouter à la bibliothèque"
+                  >
                     <PlusCircleIcon weight="regular" />
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label="Pleine page" position="top">
-                  <ActionIcon variant="subtle" size="sm" aria-label="Afficher en pleine page">
-                    <ArrowSquareOutIcon weight="regular" />
+                  <ActionIcon
+                    variant="subtle"
+                    size="sm"
+                    aria-label="Afficher en pleine page"
+                  >
+                    <ArrowsOutSimpleIcon weight="regular" />
                   </ActionIcon>
                 </Tooltip>
               </Flex>

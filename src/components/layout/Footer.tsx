@@ -2,9 +2,11 @@ import { ActionIcon, AppShell, Box, Flex, Text, Tooltip } from '@mantine/core';
 import {
   EqualizerIcon,
   HeartIcon,
+  MicrophoneStageIcon,
   MusicNotesIcon,
   MusicNotesPlusIcon,
   PlayIcon,
+  PlusCircleIcon,
   QueueIcon,
   RepeatIcon,
   ShuffleIcon,
@@ -32,11 +34,19 @@ export function Footer() {
           <Box
             w={48}
             h={48}
-            style={{ borderRadius: 4, background: 'var(--onoko-color-default-border)', flexShrink: 0 }}
+            style={{
+              borderRadius: 4,
+              background: 'var(--onoko-color-default-border)',
+              flexShrink: 0,
+            }}
           />
           <Box style={{ minWidth: 0 }}>
-            <Text size="sm" fw={500} truncate>Titre de la piste</Text>
-            <Text size="xs" c="dimmed" truncate>Artiste</Text>
+            <Text size="sm" fw={500} truncate>
+              Titre de la piste
+            </Text>
+            <Text size="xs" c="dimmed" truncate>
+              Artiste
+            </Text>
           </Box>
           <Tooltip label="J'aime" position="top">
             <ActionIcon variant="subtle" aria-label="J'aime">
@@ -45,7 +55,7 @@ export function Footer() {
           </Tooltip>
           <Tooltip label="Ajouter à une playlist" position="top">
             <ActionIcon variant="subtle" aria-label="Ajouter à une playlist">
-              <MusicNotesPlusIcon weight="regular" />
+              <PlusCircleIcon weight="regular" />
             </ActionIcon>
           </Tooltip>
         </Flex>
@@ -64,7 +74,12 @@ export function Footer() {
               </ActionIcon>
             </Tooltip>
             <Tooltip label="Lecture / Pause" position="top">
-              <ActionIcon variant="filled" radius="xl" size="lg" aria-label="Lecture / Pause">
+              <ActionIcon
+                variant="filled"
+                radius="xl"
+                size="lg"
+                aria-label="Lecture / Pause"
+              >
                 <PlayIcon weight="fill" />
               </ActionIcon>
             </Tooltip>
@@ -80,9 +95,20 @@ export function Footer() {
             </Tooltip>
           </Flex>
           <Flex align="center" gap="xs" w="100%" style={{ maxWidth: '28rem' }}>
-            <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>0:00</Text>
-            <Box style={{ flex: 1, height: 4, borderRadius: 2, background: 'var(--onoko-color-default-border)' }} />
-            <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>0:00</Text>
+            <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
+              0:00
+            </Text>
+            <Box
+              style={{
+                flex: 1,
+                height: 4,
+                borderRadius: 2,
+                background: 'var(--onoko-color-default-border)',
+              }}
+            />
+            <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
+              0:00
+            </Text>
           </Flex>
         </Flex>
 
@@ -90,7 +116,7 @@ export function Footer() {
         <Flex align="center" gap="xs" justify="flex-end" style={{ flex: 1 }}>
           <Tooltip label="Paroles" position="top">
             <ActionIcon variant="subtle" aria-label="Paroles">
-              <MusicNotesIcon weight="regular" />
+              <MicrophoneStageIcon weight="regular" />
             </ActionIcon>
           </Tooltip>
           <Tooltip label="File d'attente" position="top">
