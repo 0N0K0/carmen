@@ -1,4 +1,4 @@
-import { ActionIcon, AppShell, Box, Flex, Text } from '@mantine/core';
+import { ActionIcon, AppShell, Box, Flex, Text, Tooltip } from '@mantine/core';
 
 /**
  * Pied de page fixe contenant le lecteur audio, divisé en trois zones.
@@ -25,18 +25,32 @@ export function Footer() {
             <Text size="sm" fw={500} truncate>Titre de la piste</Text>
             <Text size="xs" c="dimmed" truncate>Artiste</Text>
           </Box>
-          <ActionIcon variant="subtle" aria-label="J'aime">♡</ActionIcon>
-          <ActionIcon variant="subtle" aria-label="Ajouter à une playlist">+</ActionIcon>
+          <Tooltip label="J'aime" position="top">
+            <ActionIcon variant="subtle" aria-label="J'aime">♡</ActionIcon>
+          </Tooltip>
+          <Tooltip label="Ajouter à une playlist" position="top">
+            <ActionIcon variant="subtle" aria-label="Ajouter à une playlist">+</ActionIcon>
+          </Tooltip>
         </Flex>
 
         {/* Zone centrale : contrôles */}
         <Flex direction="column" align="center" gap={4} style={{ flex: 2 }}>
           <Flex align="center" gap="xs">
-            <ActionIcon variant="subtle" aria-label="Aléatoire">⇌</ActionIcon>
-            <ActionIcon variant="subtle" aria-label="Précédent">⏮</ActionIcon>
-            <ActionIcon variant="filled" radius="xl" aria-label="Lecture/Pause">▶</ActionIcon>
-            <ActionIcon variant="subtle" aria-label="Suivant">⏭</ActionIcon>
-            <ActionIcon variant="subtle" aria-label="Répétition">↻</ActionIcon>
+            <Tooltip label="Lecture aléatoire" position="top">
+              <ActionIcon variant="subtle" aria-label="Lecture aléatoire">⇌</ActionIcon>
+            </Tooltip>
+            <Tooltip label="Précédent" position="top">
+              <ActionIcon variant="subtle" aria-label="Précédent">⏮</ActionIcon>
+            </Tooltip>
+            <Tooltip label="Lecture / Pause" position="top">
+              <ActionIcon variant="filled" radius="xl" aria-label="Lecture / Pause">▶</ActionIcon>
+            </Tooltip>
+            <Tooltip label="Suivant" position="top">
+              <ActionIcon variant="subtle" aria-label="Suivant">⏭</ActionIcon>
+            </Tooltip>
+            <Tooltip label="Répétition" position="top">
+              <ActionIcon variant="subtle" aria-label="Répétition">↻</ActionIcon>
+            </Tooltip>
           </Flex>
           <Flex align="center" gap="xs" w="100%" style={{ maxWidth: '28rem' }}>
             <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>0:00</Text>
@@ -47,10 +61,18 @@ export function Footer() {
 
         {/* Zone droite : outils */}
         <Flex align="center" gap="xs" justify="flex-end" style={{ flex: 1 }}>
-          <ActionIcon variant="subtle" aria-label="Paroles">♪</ActionIcon>
-          <ActionIcon variant="subtle" aria-label="File d'attente">≡</ActionIcon>
-          <ActionIcon variant="subtle" aria-label="Volume">🔊</ActionIcon>
-          <ActionIcon variant="subtle" aria-label="Égaliseur">∿</ActionIcon>
+          <Tooltip label="Paroles" position="top">
+            <ActionIcon variant="subtle" aria-label="Paroles">♪</ActionIcon>
+          </Tooltip>
+          <Tooltip label="File d'attente" position="top">
+            <ActionIcon variant="subtle" aria-label="File d'attente">≡</ActionIcon>
+          </Tooltip>
+          <Tooltip label="Volume" position="top">
+            <ActionIcon variant="subtle" aria-label="Volume">🔊</ActionIcon>
+          </Tooltip>
+          <Tooltip label="Égaliseur" position="top">
+            <ActionIcon variant="subtle" aria-label="Égaliseur">∿</ActionIcon>
+          </Tooltip>
         </Flex>
       </Flex>
     </AppShell.Footer>

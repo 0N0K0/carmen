@@ -5,10 +5,8 @@ import { Footer } from './Footer';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
-const HEADER_HEIGHT = 64;   // 64px ≈ 2.67 × 24px — aligné grille verticale (±12px tolerance)
-const FOOTER_HEIGHT = 96;   // 96px = 4 × 24px
-const NAVBAR_WIDTH = 280;   // largeur sidebar développée
-const NAVBAR_WIDTH_COLLAPSED = 0; // sidebar repliée disparaît
+const HEADER_HEIGHT = 64;  // 64px ≈ 2.67 × 24px (tolérance ±12px accordée aux éléments fixes)
+const FOOTER_HEIGHT = 96;  // 96px = 4 × 24px
 
 /**
  * Layout principal de l'application.
@@ -16,20 +14,22 @@ const NAVBAR_WIDTH_COLLAPSED = 0; // sidebar repliée disparaît
  * Compose l'AppShell Mantine avec TopBar, Sidebar et Footer, et rend la
  * zone de contenu principale via `<Outlet />` (React Router).
  *
- * La sidebar se replie via le store `useLayoutStore`.
+ * La largeur de la sidebar est pilotée par `useLayoutStore`.
+ * La sidebar n'est jamais entièrement masquée : sa largeur minimale est
+ * `SIDEBAR_WIDTH_MIN` (vue réduite).
  *
  * @returns {JSX.Element} Structure AppShell complète.
  */
 export function AppLayout() {
-  const collapsed = useLayoutStore((s) => s.sidebarCollapsed);
+  const sidebarWidth = useLayoutStore((s) => s.sidebarWidth);
 
   return (
     <AppShell
       header={{ height: HEADER_HEIGHT }}
       navbar={{
-        width: collapsed ? NAVBAR_WIDTH_COLLAPSED : NAVBAR_WIDTH,
+        width: sidebarWidth,
         breakpoint: 'sm',
-        collapsed: { mobile: true, desktop: collapsed },
+        collapsed: { mobile: true, desktop: false },
       }}
       footer={{ height: FOOTER_HEIGHT }}
       padding={0}

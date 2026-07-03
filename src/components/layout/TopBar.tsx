@@ -1,4 +1,4 @@
-import { ActionIcon, AppShell, Box, Flex, TextInput } from '@mantine/core';
+import { ActionIcon, AppShell, Flex, TextInput, Tooltip } from '@mantine/core';
 
 /**
  * Barre supérieure de l'application, divisée en trois zones.
@@ -15,26 +15,36 @@ export function TopBar() {
       <Flex h="100%" align="center" justify="space-between" px="md" gap="md">
         {/* Zone gauche : navigation */}
         <Flex align="center" gap="xs" style={{ flexShrink: 0 }}>
-          <ActionIcon variant="subtle" aria-label="Précédent">{'<'}</ActionIcon>
-          <ActionIcon variant="subtle" aria-label="Suivant">{'>'}</ActionIcon>
-          <ActionIcon variant="subtle" aria-label="Recharger">↺</ActionIcon>
+          <Tooltip label="Précédent" position="bottom">
+            <ActionIcon variant="subtle" aria-label="Précédent">{'<'}</ActionIcon>
+          </Tooltip>
+          <Tooltip label="Suivant" position="bottom">
+            <ActionIcon variant="subtle" aria-label="Suivant">{'>'}</ActionIcon>
+          </Tooltip>
+          <Tooltip label="Recharger" position="bottom">
+            <ActionIcon variant="subtle" aria-label="Recharger">↺</ActionIcon>
+          </Tooltip>
         </Flex>
 
         {/* Zone centrale : accueil + recherche + explorer */}
         <Flex align="center" gap="xs" style={{ flex: 1, maxWidth: '40rem' }}>
-          <ActionIcon variant="subtle" aria-label="Accueil">⌂</ActionIcon>
+          <Tooltip label="Accueil" position="bottom">
+            <ActionIcon variant="subtle" aria-label="Accueil">⌂</ActionIcon>
+          </Tooltip>
           <TextInput
             placeholder="Rechercher…"
             style={{ flex: 1 }}
             aria-label="Recherche"
           />
-          <ActionIcon variant="subtle" aria-label="Explorer">⊕</ActionIcon>
+          <Tooltip label="Explorer" position="bottom">
+            <ActionIcon variant="subtle" aria-label="Explorer">⊕</ActionIcon>
+          </Tooltip>
         </Flex>
 
         {/* Zone droite : menu utilisateur */}
-        <Box style={{ flexShrink: 0 }}>
+        <Tooltip label="Menu utilisateur" position="bottom-end">
           <ActionIcon variant="subtle" aria-label="Menu utilisateur">👤</ActionIcon>
-        </Box>
+        </Tooltip>
       </Flex>
     </AppShell.Header>
   );
