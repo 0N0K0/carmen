@@ -14,14 +14,22 @@ const FOOTER_HEIGHT = 96;  // 96px = 4 × 24px
  * Compose l'AppShell Mantine avec TopBar, Sidebar et Footer, et rend la
  * zone de contenu principale via `<Outlet />` (React Router).
  *
- * La largeur de la sidebar est pilotée par `useLayoutStore`.
- * La sidebar n'est jamais entièrement masquée : sa largeur minimale est
- * `SIDEBAR_WIDTH_MIN` (vue réduite).
+ * En mode pleine page (`sidebarFullPage`), les variables CSS de l'AppShell
+ * sont surchargées via style inline pour que la navbar occupe 100 % de la
+ * largeur et recouvre le contenu principal.
  *
  * @returns {JSX.Element} Structure AppShell complète.
  */
 export function AppLayout() {
   const sidebarWidth = useLayoutStore((s) => s.sidebarWidth);
+  const sidebarFullPage = useLayoutStore((s) => s.sidebarFullPage);
+
+  const fullPageVars = sidebarFullPage
+    ? ({
+        '--app-shell-navbar-width': '100vw',
+        '--app-shell-navbar-offset': '0px',
+      } as React.CSSProperties)
+    : undefined;
 
   return (
     <AppShell
@@ -33,6 +41,7 @@ export function AppLayout() {
       }}
       footer={{ height: FOOTER_HEIGHT }}
       padding={0}
+      style={fullPageVars}
     >
       <TopBar />
       <Sidebar />
