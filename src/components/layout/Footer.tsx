@@ -1,4 +1,17 @@
 import { ActionIcon, AppShell, Box, Flex, Text, Tooltip } from '@mantine/core';
+import {
+  EqualizerIcon,
+  HeartIcon,
+  MusicNotesIcon,
+  MusicNotesPlusIcon,
+  PlayIcon,
+  QueueIcon,
+  RepeatIcon,
+  ShuffleIcon,
+  SkipBackIcon,
+  SkipForwardIcon,
+  SpeakerHighIcon,
+} from '@phosphor-icons/react';
 
 /**
  * Pied de page fixe contenant le lecteur audio, divisé en trois zones.
@@ -26,10 +39,14 @@ export function Footer() {
             <Text size="xs" c="dimmed" truncate>Artiste</Text>
           </Box>
           <Tooltip label="J'aime" position="top">
-            <ActionIcon variant="subtle" aria-label="J'aime">♡</ActionIcon>
+            <ActionIcon variant="subtle" aria-label="J'aime">
+              <HeartIcon weight="regular" />
+            </ActionIcon>
           </Tooltip>
           <Tooltip label="Ajouter à une playlist" position="top">
-            <ActionIcon variant="subtle" aria-label="Ajouter à une playlist">+</ActionIcon>
+            <ActionIcon variant="subtle" aria-label="Ajouter à une playlist">
+              <MusicNotesPlusIcon weight="regular" />
+            </ActionIcon>
           </Tooltip>
         </Flex>
 
@@ -37,19 +54,29 @@ export function Footer() {
         <Flex direction="column" align="center" gap={4} style={{ flex: 2 }}>
           <Flex align="center" gap="xs">
             <Tooltip label="Lecture aléatoire" position="top">
-              <ActionIcon variant="subtle" aria-label="Lecture aléatoire">⇌</ActionIcon>
+              <ActionIcon variant="subtle" aria-label="Lecture aléatoire">
+                <ShuffleIcon weight="regular" />
+              </ActionIcon>
             </Tooltip>
             <Tooltip label="Précédent" position="top">
-              <ActionIcon variant="subtle" aria-label="Précédent">⏮</ActionIcon>
+              <ActionIcon variant="subtle" aria-label="Précédent">
+                <SkipBackIcon weight="fill" />
+              </ActionIcon>
             </Tooltip>
             <Tooltip label="Lecture / Pause" position="top">
-              <ActionIcon variant="filled" radius="xl" aria-label="Lecture / Pause">▶</ActionIcon>
+              <ActionIcon variant="filled" radius="xl" size="lg" aria-label="Lecture / Pause">
+                <PlayIcon weight="fill" />
+              </ActionIcon>
             </Tooltip>
             <Tooltip label="Suivant" position="top">
-              <ActionIcon variant="subtle" aria-label="Suivant">⏭</ActionIcon>
+              <ActionIcon variant="subtle" aria-label="Suivant">
+                <SkipForwardIcon weight="fill" />
+              </ActionIcon>
             </Tooltip>
             <Tooltip label="Répétition" position="top">
-              <ActionIcon variant="subtle" aria-label="Répétition">↻</ActionIcon>
+              <ActionIcon variant="subtle" aria-label="Répétition">
+                <RepeatIcon weight="regular" />
+              </ActionIcon>
             </Tooltip>
           </Flex>
           <Flex align="center" gap="xs" w="100%" style={{ maxWidth: '28rem' }}>
@@ -62,16 +89,24 @@ export function Footer() {
         {/* Zone droite : outils */}
         <Flex align="center" gap="xs" justify="flex-end" style={{ flex: 1 }}>
           <Tooltip label="Paroles" position="top">
-            <ActionIcon variant="subtle" aria-label="Paroles">♪</ActionIcon>
+            <ActionIcon variant="subtle" aria-label="Paroles">
+              <MusicNotesIcon weight="regular" />
+            </ActionIcon>
           </Tooltip>
           <Tooltip label="File d'attente" position="top">
-            <ActionIcon variant="subtle" aria-label="File d'attente">≡</ActionIcon>
+            <ActionIcon variant="subtle" aria-label="File d'attente">
+              <QueueIcon weight="regular" />
+            </ActionIcon>
           </Tooltip>
           <Tooltip label="Volume" position="top">
-            <ActionIcon variant="subtle" aria-label="Volume">🔊</ActionIcon>
+            <ActionIcon variant="subtle" aria-label="Volume">
+              <SpeakerHighIcon weight="regular" />
+            </ActionIcon>
           </Tooltip>
           <Tooltip label="Égaliseur" position="top">
-            <ActionIcon variant="subtle" aria-label="Égaliseur">∿</ActionIcon>
+            <ActionIcon variant="subtle" aria-label="Égaliseur">
+              <EqualizerIcon weight="regular" />
+            </ActionIcon>
           </Tooltip>
         </Flex>
       </Flex>

@@ -8,6 +8,17 @@ import {
   TextInput,
   Tooltip,
 } from '@mantine/core';
+import {
+  ArrowLineLeftIcon,
+  ArrowLineRightIcon,
+  ArrowSquareOutIcon,
+  BookmarkSimpleIcon,
+  GridFourIcon,
+  ListIcon,
+  PlaylistIcon,
+  PlusCircleIcon,
+  SortAscendingIcon,
+} from '@phosphor-icons/react';
 import { useRef } from 'react';
 import {
   SIDEBAR_WIDTH_NORMAL_MIN,
@@ -23,8 +34,8 @@ import {
  * - `SIDEBAR_WIDTH_REDUCED` (72 px) : vue réduite, icônes seuls.
  * - `SIDEBAR_WIDTH_NORMAL_MIN` (280 px) : largeur minimale en vue normale.
  *
- * Au-dessus de 280 px, la largeur est libre. En dessous de 280 px,
- * le drag snappe à 72 px. La sidebar n'est jamais entièrement masquée.
+ * Au-dessus de 280 px, la largeur est libre. Le snap est appliqué en live
+ * pendant le drag : aucune valeur entre 72 et 280 n'est possible.
  *
  * @returns {JSX.Element} Navbar de l'AppShell.
  */
@@ -45,13 +56,12 @@ export function Sidebar() {
   }
 
   /**
-   * Met à jour la largeur en temps réel pendant le drag (pas de snap, pas de clamp haut).
+   * Met à jour la largeur avec snap live — aucune valeur entre 72 et 280.
    * @param {React.PointerEvent<HTMLDivElement>} e Événement pointermove.
    */
   function handleResizeMove(e: React.PointerEvent<HTMLDivElement>) {
     if (!e.currentTarget.hasPointerCapture(e.pointerId) || !dragStart.current) return;
     const raw = dragStart.current.width + (e.clientX - dragStart.current.x);
-    // Snap live : aucune valeur intermédiaire entre 72 et 280.
     setSidebarWidth(snapSidebarWidth(raw));
   }
 
@@ -90,14 +100,18 @@ export function Sidebar() {
         <Flex direction="column" align="center" gap="xs" pt="xs">
           <Tooltip label="Agrandir la sidebar" position="right">
             <ActionIcon variant="subtle" onClick={toggleReduced} aria-label="Agrandir la sidebar">
-              ▶
+              <ArrowLineRightIcon weight="bold" />
             </ActionIcon>
           </Tooltip>
           <Tooltip label="Raccourcis" position="right">
-            <ActionIcon variant="subtle" aria-label="Raccourcis">★</ActionIcon>
+            <ActionIcon variant="subtle" aria-label="Raccourcis">
+              <BookmarkSimpleIcon weight="fill" />
+            </ActionIcon>
           </Tooltip>
           <Tooltip label="Bibliothèque" position="right">
-            <ActionIcon variant="subtle" aria-label="Bibliothèque">♫</ActionIcon>
+            <ActionIcon variant="subtle" aria-label="Bibliothèque">
+              <PlaylistIcon weight="fill" />
+            </ActionIcon>
           </Tooltip>
         </Flex>
       ) : (
@@ -106,14 +120,16 @@ export function Sidebar() {
           <Flex justify="flex-end" mb={4}>
             <Tooltip label="Réduire la sidebar" position="right">
               <ActionIcon variant="subtle" size="sm" onClick={toggleReduced} aria-label="Réduire la sidebar">
-                ◀
+                <ArrowLineLeftIcon weight="bold" />
               </ActionIcon>
             </Tooltip>
           </Flex>
 
           <Accordion multiple defaultValue={['raccourcis', 'bibliotheque']}>
             <Accordion.Item value="raccourcis">
-              <Accordion.Control>Raccourcis</Accordion.Control>
+              <Accordion.Control icon={<BookmarkSimpleIcon weight="fill" />}>
+                Raccourcis
+              </Accordion.Control>
               <Accordion.Panel>
                 <Box c="dimmed" fz="sm">Aucun raccourci</Box>
               </Accordion.Panel>
@@ -122,7 +138,9 @@ export function Sidebar() {
             {/* Boutons d'action superposés pour éviter button > button */}
             <Box pos="relative">
               <Accordion.Item value="bibliotheque">
-                <Accordion.Control>Bibliothèque</Accordion.Control>
+                <Accordion.Control icon={<PlaylistIcon weight="fill" />}>
+                  Bibliothèque
+                </Accordion.Control>
                 <Accordion.Panel>
                   <Flex direction="column" gap="xs">
                     <SegmentedControl
@@ -137,14 +155,20 @@ export function Sidebar() {
                     <TextInput size="xs" placeholder="Rechercher dans la bibliothèque…" />
                     <Flex justify="space-between" align="center">
                       <Tooltip label="Trier" position="top">
-                        <ActionIcon variant="subtle" size="sm" aria-label="Trier">⇅</ActionIcon>
+                        <ActionIcon variant="subtle" size="sm" aria-label="Trier">
+                          <SortAscendingIcon weight="regular" />
+                        </ActionIcon>
                       </Tooltip>
                       <Flex gap="xs">
                         <Tooltip label="Vue liste" position="top">
-                          <ActionIcon variant="subtle" size="sm" aria-label="Vue liste">☰</ActionIcon>
+                          <ActionIcon variant="subtle" size="sm" aria-label="Vue liste">
+                            <ListIcon weight="regular" />
+                          </ActionIcon>
                         </Tooltip>
                         <Tooltip label="Vue grille" position="top">
-                          <ActionIcon variant="subtle" size="sm" aria-label="Vue grille">⊞</ActionIcon>
+                          <ActionIcon variant="subtle" size="sm" aria-label="Vue grille">
+                            <GridFourIcon weight="regular" />
+                          </ActionIcon>
                         </Tooltip>
                       </Flex>
                     </Flex>
@@ -159,10 +183,14 @@ export function Sidebar() {
                 style={{ top: 0, right: '2.5rem', height: '2.75rem', alignItems: 'center' }}
               >
                 <Tooltip label="Ajouter" position="top">
-                  <ActionIcon variant="subtle" size="sm" aria-label="Ajouter à la bibliothèque">+</ActionIcon>
+                  <ActionIcon variant="subtle" size="sm" aria-label="Ajouter à la bibliothèque">
+                    <PlusCircleIcon weight="regular" />
+                  </ActionIcon>
                 </Tooltip>
                 <Tooltip label="Pleine page" position="top">
-                  <ActionIcon variant="subtle" size="sm" aria-label="Afficher en pleine page">⤢</ActionIcon>
+                  <ActionIcon variant="subtle" size="sm" aria-label="Afficher en pleine page">
+                    <ArrowSquareOutIcon weight="regular" />
+                  </ActionIcon>
                 </Tooltip>
               </Flex>
             </Box>
