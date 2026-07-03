@@ -101,9 +101,8 @@ function SidebarNormal({
 }) {
   return (
     <Box p="xs">
-      {/* "Réduire la sidebar" masqué en mode pleine page */}
-      {!sidebarFullPage && (
-        <Flex justify="flex-end" mb={4}>
+      <Flex justify="space-between" align="center" mb={4}>
+        {!sidebarFullPage && (
           <Tooltip label="Réduire la sidebar" position="right">
             <ActionIcon
               variant="subtle"
@@ -114,8 +113,22 @@ function SidebarNormal({
               <ArrowLineLeftIcon weight="bold" />
             </ActionIcon>
           </Tooltip>
-        </Flex>
-      )}
+        )}
+        <Tooltip label={sidebarFullPage ? 'Réduire' : 'Pleine page'} position="left">
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            aria-label={sidebarFullPage ? 'Réduire la bibliothèque' : 'Afficher en pleine page'}
+            onClick={() => onToggleFullPage(!sidebarFullPage)}
+          >
+            {sidebarFullPage ? (
+              <ArrowsInSimpleIcon weight="regular" />
+            ) : (
+              <ArrowsOutSimpleIcon weight="regular" />
+            )}
+          </ActionIcon>
+        </Tooltip>
+      </Flex>
 
       <Accordion multiple defaultValue={['raccourcis', 'bibliotheque']}>
         <Accordion.Item value="raccourcis">
@@ -127,7 +140,7 @@ function SidebarNormal({
           </Accordion.Panel>
         </Accordion.Item>
 
-        {/* Boutons d'action superposés pour éviter button > button */}
+        {/* Bouton Ajouter superposé pour éviter button > button */}
         <Box pos="relative">
           <Accordion.Item value="bibliotheque">
             <Accordion.Control>Bibliothèque</Accordion.Control>
@@ -173,35 +186,12 @@ function SidebarNormal({
           </Accordion.Item>
 
           <Flex
-            gap={4}
             pos="absolute"
             style={{ top: 0, right: '2.5rem', height: '2.75rem', alignItems: 'center' }}
           >
             <Tooltip label="Ajouter" position="top">
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                aria-label="Ajouter à la bibliothèque"
-              >
+              <ActionIcon variant="subtle" size="sm" aria-label="Ajouter à la bibliothèque">
                 <PlusCircleIcon weight="regular" />
-              </ActionIcon>
-            </Tooltip>
-            <Tooltip label={sidebarFullPage ? 'Réduire' : 'Pleine page'} position="top">
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                aria-label={
-                  sidebarFullPage
-                    ? 'Réduire la bibliothèque'
-                    : 'Afficher en pleine page'
-                }
-                onClick={() => onToggleFullPage(!sidebarFullPage)}
-              >
-                {sidebarFullPage ? (
-                  <ArrowsInSimpleIcon weight="regular" />
-                ) : (
-                  <ArrowsOutSimpleIcon weight="regular" />
-                )}
               </ActionIcon>
             </Tooltip>
           </Flex>
