@@ -140,9 +140,7 @@ export function Sidebar() {
 
           <Accordion multiple defaultValue={['raccourcis', 'bibliotheque']}>
             <Accordion.Item value="raccourcis">
-              <Accordion.Control icon={<BookmarkSimpleIcon weight="fill" />}>
-                Raccourcis
-              </Accordion.Control>
+              <Accordion.Control>Raccourcis</Accordion.Control>
               <Accordion.Panel>
                 <Box c="dimmed" fz="sm">
                   Aucun raccourci
@@ -153,9 +151,7 @@ export function Sidebar() {
             {/* Boutons d'action superposés pour éviter button > button */}
             <Box pos="relative">
               <Accordion.Item value="bibliotheque">
-                <Accordion.Control icon={<PlaylistIcon weight="fill" />}>
-                  Bibliothèque
-                </Accordion.Control>
+                <Accordion.Control>Bibliothèque</Accordion.Control>
                 <Accordion.Panel>
                   <Flex direction="column" gap="xs">
                     <SegmentedControl

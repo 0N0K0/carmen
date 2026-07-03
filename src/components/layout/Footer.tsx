@@ -3,8 +3,6 @@ import {
   EqualizerIcon,
   HeartIcon,
   MicrophoneStageIcon,
-  MusicNotesIcon,
-  MusicNotesPlusIcon,
   PlayIcon,
   PlusCircleIcon,
   QueueIcon,
