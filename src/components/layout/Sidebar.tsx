@@ -2,10 +2,15 @@ import {
   Accordion,
   ActionIcon,
   AppShell,
+  Avatar,
   Box,
   Flex,
   Scroller,
+  ScrollArea,
+  Skeleton,
+  Stack,
   Tabs,
+  Text,
   TextInput,
   Tooltip,
 } from '@mantine/core';
@@ -20,10 +25,13 @@ import {
   PlaylistIcon,
   PlusCircleIcon,
   SortAscendingIcon,
+  UserIcon,
+  VinylRecordIcon,
 } from '@phosphor-icons/react';
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Link } from 'react-router-dom';
+import { useAllAlbums, useAllArtists, useAllPlaylists } from '../../hooks/useLibrary';
 import {
   MAIN_CONTENT_MIN_WIDTH,
   SIDEBAR_WIDTH_NORMAL_MIN,
@@ -32,6 +40,69 @@ import {
   useLayoutStore,
 } from '../../store/layout';
 import { SyncDeezerButton } from '../ui/SyncDeezerButton';
+
+/** Élément normalisé affiché dans une liste de la sidebar. */
+interface SidebarLibraryItem {
+  id: string;
+  label: string;
+  image?: string | null;
+}
+
+/**
+ * Liste compacte d'éléments de bibliothèque pour la sidebar : skeleton
+ * pendant le chargement, état vide explicite, sinon une ligne par élément.
+ * @param {SidebarLibraryItem[]} props.items Éléments à afficher.
+ * @param {boolean} props.loading Chargement en cours.
+ * @param {React.ReactNode} props.fallbackIcon Icône affichée si pas d'image.
+ * @param {string} props.emptyMessage Message affiché si `items` est vide.
+ * @returns {JSX.Element} Liste ou état de chargement/vide.
+ */
+function SidebarLibraryList({
+  items,
+  loading,
+  fallbackIcon,
+  emptyMessage,
+}: {
+  items: SidebarLibraryItem[];
+  loading: boolean;
+  fallbackIcon: React.ReactNode;
+  emptyMessage: string;
+}) {
+  if (loading) {
+    return (
+      <Stack gap={4} style={{ flex: 1, minHeight: 0 }}>
+        {Array.from({ length: 5 }, (_, i) => (
+          <Skeleton key={i} h={32} radius="sm" />
+        ))}
+      </Stack>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <Box c="dimmed" fz="sm" style={{ flex: 1, minHeight: 0 }}>
+        {emptyMessage}
+      </Box>
+    );
+  }
+
+  return (
+    <ScrollArea style={{ flex: 1, minHeight: 0 }} type="auto" offsetScrollbars>
+      <Stack gap={2}>
+        {items.map((item) => (
+          <Flex key={item.id} align="center" gap="xs">
+            <Avatar src={item.image} size="sm" radius="sm">
+              {fallbackIcon}
+            </Avatar>
+            <Text fz="sm" lineClamp={1}>
+              {item.label}
+            </Text>
+          </Flex>
+        ))}
+      </Stack>
+    </ScrollArea>
+  );
+}
 
 /**
  * Pixels au-delà du taquet haut à franchir volontairement pour activer la pleine page.
@@ -119,9 +190,14 @@ function SidebarNormal({
   onReduce: () => void;
   onToggleFullPage: (v: boolean) => void;
 }) {
+  const [libraryTab, setLibraryTab] = useState('playlists');
+  const { playlists, loading: playlistsLoading } = useAllPlaylists();
+  const { albums, loading: albumsLoading } = useAllAlbums();
+  const { artists, loading: artistsLoading } = useAllArtists();
+
   return (
-    <Box p="xs">
-      <Flex justify="space-between" align="center" mb={4}>
+    <Box p="xs" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Flex justify="space-between" align="center" mb={4} style={{ flexShrink: 0 }}>
         {!sidebarFullPage && (
           <Tooltip label="Réduire la sidebar" position="right">
             <ActionIcon
@@ -160,8 +236,12 @@ function SidebarNormal({
         </Flex>
       </Flex>
 
-      <Accordion multiple defaultValue={['raccourcis', 'bibliotheque']}>
-        <Accordion.Item value="raccourcis">
+      <Accordion
+        multiple
+        defaultValue={['raccourcis', 'bibliotheque']}
+        style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+      >
+        <Accordion.Item value="raccourcis" style={{ flexShrink: 0 }}>
           <Accordion.Control>Raccourcis</Accordion.Control>
           <Accordion.Panel>
             <Box c="dimmed" fz="sm">
@@ -171,12 +251,32 @@ function SidebarNormal({
         </Accordion.Item>
 
         {/* Bouton Ajouter superposé pour éviter button > button */}
-        <Box pos="relative">
-          <Accordion.Item value="bibliotheque">
+        <Box
+          pos="relative"
+          style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+        >
+          <Accordion.Item
+            value="bibliotheque"
+            style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+          >
             <Accordion.Control>Bibliothèque</Accordion.Control>
-            <Accordion.Panel>
-              <Flex direction="column" gap="xs">
-                <Tabs defaultValue="playlists">
+            <Accordion.Panel
+              style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+              styles={{
+                content: {
+                  flex: 1,
+                  minHeight: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                },
+              }}
+            >
+              <Flex direction="column" gap="xs" style={{ flex: 1, minHeight: 0 }}>
+                <Tabs
+                  value={libraryTab}
+                  onChange={(v) => v && setLibraryTab(v)}
+                  style={{ flexShrink: 0 }}
+                >
                   <Tabs.List>
                     <Scroller>
                       <Tabs.Tab value="playlists">Playlists</Tabs.Tab>
@@ -189,8 +289,9 @@ function SidebarNormal({
                 <TextInput
                   size="xs"
                   placeholder="Rechercher dans la bibliothèque…"
+                  style={{ flexShrink: 0 }}
                 />
-                <Flex justify="space-between" align="center">
+                <Flex justify="space-between" align="center" style={{ flexShrink: 0 }}>
                   <Tooltip label="Trier" position="top">
                     <ActionIcon variant="subtle" size="sm" aria-label="Trier">
                       <SortAscendingIcon />
@@ -217,9 +318,54 @@ function SidebarNormal({
                     </Tooltip>
                   </Flex>
                 </Flex>
-                <Box c="dimmed" fz="sm">
-                  Aucun élément
-                </Box>
+
+                {libraryTab === 'playlists' && (
+                  <SidebarLibraryList
+                    items={playlists.map(
+                      (p: { id: string; title: string; picture?: string | null }) => ({
+                        id: p.id,
+                        label: p.title,
+                        image: p.picture,
+                      }),
+                    )}
+                    loading={playlistsLoading}
+                    fallbackIcon={<PlaylistIcon />}
+                    emptyMessage="Aucune playlist synchronisée."
+                  />
+                )}
+                {libraryTab === 'albums' && (
+                  <SidebarLibraryList
+                    items={albums.map(
+                      (a: { id: string; title: string; cover?: string | null }) => ({
+                        id: a.id,
+                        label: a.title,
+                        image: a.cover,
+                      }),
+                    )}
+                    loading={albumsLoading}
+                    fallbackIcon={<VinylRecordIcon />}
+                    emptyMessage="Aucun album synchronisé."
+                  />
+                )}
+                {libraryTab === 'artistes' && (
+                  <SidebarLibraryList
+                    items={artists.map(
+                      (a: { id: string; name: string; picture?: string | null }) => ({
+                        id: a.id,
+                        label: a.name,
+                        image: a.picture,
+                      }),
+                    )}
+                    loading={artistsLoading}
+                    fallbackIcon={<UserIcon />}
+                    emptyMessage="Aucun artiste synchronisé."
+                  />
+                )}
+                {libraryTab === 'podcasts' && (
+                  <Box c="dimmed" fz="sm" style={{ flex: 1, minHeight: 0 }}>
+                    Aucun élément
+                  </Box>
+                )}
               </Flex>
             </Accordion.Panel>
           </Accordion.Item>
@@ -397,7 +543,7 @@ export function Sidebar() {
         {isReduced ? (
           <SidebarReduced onExpand={toggleReduced} />
         ) : (
-          <Box style={{ minWidth: SIDEBAR_WIDTH_NORMAL_MIN }}>
+          <Box style={{ minWidth: SIDEBAR_WIDTH_NORMAL_MIN, height: '100%' }}>
             <SidebarNormal
               sidebarFullPage={sidebarFullPage}
               onReduce={toggleReduced}

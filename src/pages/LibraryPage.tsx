@@ -1,9 +1,21 @@
-import { Avatar, Box, Card, SimpleGrid, Skeleton, Stack, Text, Title } from '@mantine/core';
+import {
+  Avatar,
+  Box,
+  Card,
+  Pagination,
+  SimpleGrid,
+  Skeleton,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
 import { PlaylistIcon, UserIcon, VinylRecordIcon } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { useAlbums, useArtists, usePlaylists } from '../hooks/useLibrary';
 
 const SKELETON_COUNT = 6;
+const PAGE_SIZE = 30;
 
 /**
  * Carte affichant une vignette (image ou fallback) et un libellé.
@@ -62,11 +74,15 @@ function LibrarySkeletonGrid() {
 
 /**
  * Section de la bibliothèque : titre, grille d'éléments, skeleton pendant le
- * chargement, état vide explicite si la liste est vide.
+ * chargement, état vide explicite si la liste est vide, pagination si plus
+ * d'une page de résultats.
  * @param {string} props.title Titre de la section.
  * @param {boolean} props.loading Section en cours de chargement.
  * @param {ReactNode} props.emptyIcon Icône affichée dans l'état vide.
  * @param {string} props.emptyMessage Message affiché dans l'état vide.
+ * @param {number} props.page Page courante (1-indexée).
+ * @param {(page: number) => void} props.onPageChange Change la page courante.
+ * @param {number} props.totalPages Nombre total de pages.
  * @param {ReactNode[]} props.children Cartes d'éléments à afficher.
  * @returns {JSX.Element} Section de bibliothèque.
  */
@@ -75,12 +91,18 @@ function LibrarySection({
   loading,
   emptyIcon,
   emptyMessage,
+  page,
+  onPageChange,
+  totalPages,
   children,
 }: {
   title: string;
   loading: boolean;
   emptyIcon: ReactNode;
   emptyMessage: string;
+  page: number;
+  onPageChange: (page: number) => void;
+  totalPages: number;
   children: ReactNode[];
 }) {
   return (
@@ -96,7 +118,12 @@ function LibrarySection({
           <Text fz="sm">{emptyMessage}</Text>
         </Stack>
       ) : (
-        <SimpleGrid cols={{ base: 2, xs: 3, sm: 4, md: 6 }}>{children}</SimpleGrid>
+        <>
+          <SimpleGrid cols={{ base: 2, xs: 3, sm: 4, md: 6 }}>{children}</SimpleGrid>
+          {totalPages > 1 && (
+            <Pagination total={totalPages} value={page} onChange={onPageChange} mt="xs" />
+          )}
+        </>
       )}
     </Stack>
   );
@@ -109,9 +136,22 @@ function LibrarySection({
  * @returns {JSX.Element} Page de bibliothèque.
  */
 export function LibraryPage() {
-  const { playlists, loading: playlistsLoading } = usePlaylists();
-  const { albums, loading: albumsLoading } = useAlbums();
-  const { artists, loading: artistsLoading } = useArtists();
+  const [playlistsPage, setPlaylistsPage] = useState(1);
+  const [albumsPage, setAlbumsPage] = useState(1);
+  const [artistsPage, setArtistsPage] = useState(1);
+
+  const { playlists, pagination: playlistsPagination, loading: playlistsLoading } = usePlaylists(
+    playlistsPage,
+    PAGE_SIZE,
+  );
+  const { albums, pagination: albumsPagination, loading: albumsLoading } = useAlbums(
+    albumsPage,
+    PAGE_SIZE,
+  );
+  const { artists, pagination: artistsPagination, loading: artistsLoading } = useArtists(
+    artistsPage,
+    PAGE_SIZE,
+  );
 
   return (
     <Box p="md">
@@ -121,6 +161,9 @@ export function LibraryPage() {
           loading={playlistsLoading}
           emptyIcon={<PlaylistIcon size={32} />}
           emptyMessage="Aucune playlist synchronisée."
+          page={playlistsPage}
+          onPageChange={setPlaylistsPage}
+          totalPages={Math.ceil((playlistsPagination?.total ?? 0) / PAGE_SIZE)}
         >
           {playlists.map((playlist: { id: string; title: string; picture?: string | null }) => (
             <LibraryItemCard
@@ -137,6 +180,9 @@ export function LibraryPage() {
           loading={albumsLoading}
           emptyIcon={<VinylRecordIcon size={32} />}
           emptyMessage="Aucun album synchronisé."
+          page={albumsPage}
+          onPageChange={setAlbumsPage}
+          totalPages={Math.ceil((albumsPagination?.total ?? 0) / PAGE_SIZE)}
         >
           {albums.map(
             (album: {
@@ -161,6 +207,9 @@ export function LibraryPage() {
           loading={artistsLoading}
           emptyIcon={<UserIcon size={32} />}
           emptyMessage="Aucun artiste synchronisé."
+          page={artistsPage}
+          onPageChange={setArtistsPage}
+          totalPages={Math.ceil((artistsPagination?.total ?? 0) / PAGE_SIZE)}
         >
           {artists.map((artist: { id: string; name: string; picture?: string | null }) => (
             <LibraryItemCard
