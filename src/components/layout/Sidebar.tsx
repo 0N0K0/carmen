@@ -30,6 +30,7 @@ import {
   snapSidebarWidth,
   useLayoutStore,
 } from '../../store/layout';
+import { SyncDeezerButton } from '../ui/SyncDeezerButton';
 
 /**
  * Pixels au-delà du taquet haut à franchir volontairement pour activer la pleine page.
@@ -44,11 +45,23 @@ const FULL_PAGE_DRAG_THRESHOLD = 80;
  */
 function setNavbarWidthVar(width: number | '100vw') {
   if (width === '100vw') {
-    document.documentElement.style.setProperty('--app-shell-navbar-width', '100vw');
-    document.documentElement.style.setProperty('--app-shell-navbar-offset', '0px');
+    document.documentElement.style.setProperty(
+      '--app-shell-navbar-width',
+      '100vw',
+    );
+    document.documentElement.style.setProperty(
+      '--app-shell-navbar-offset',
+      '0px',
+    );
   } else {
-    document.documentElement.style.setProperty('--app-shell-navbar-width', `${width}px`);
-    document.documentElement.style.setProperty('--app-shell-navbar-offset', `${width}px`);
+    document.documentElement.style.setProperty(
+      '--app-shell-navbar-width',
+      `${width}px`,
+    );
+    document.documentElement.style.setProperty(
+      '--app-shell-navbar-offset',
+      `${width}px`,
+    );
   }
 }
 
@@ -66,8 +79,12 @@ function SidebarReduced({ onExpand }: { onExpand: () => void }) {
   return (
     <Flex direction="column" align="center" gap="xs" pt="xs">
       <Tooltip label="Agrandir la sidebar" position="right">
-        <ActionIcon variant="subtle" onClick={onExpand} aria-label="Agrandir la sidebar">
-          <ArrowLineRightIcon weight="bold" />
+        <ActionIcon
+          variant="subtle"
+          onClick={onExpand}
+          aria-label="Agrandir la sidebar"
+        >
+          <ArrowLineRightIcon />
         </ActionIcon>
       </Tooltip>
       <Tooltip label="Raccourcis" position="right">
@@ -80,6 +97,7 @@ function SidebarReduced({ onExpand }: { onExpand: () => void }) {
           <PlaylistIcon weight="fill" />
         </ActionIcon>
       </Tooltip>
+      <SyncDeezerButton />
     </Flex>
   );
 }
@@ -111,24 +129,34 @@ function SidebarNormal({
               onClick={onReduce}
               aria-label="Réduire la sidebar"
             >
-              <ArrowLineLeftIcon weight="bold" />
+              <ArrowLineLeftIcon />
             </ActionIcon>
           </Tooltip>
         )}
-        <Tooltip label={sidebarFullPage ? 'Réduire' : 'Pleine page'} position="left">
-          <ActionIcon
-            variant="subtle"
-            size="sm"
-            aria-label={sidebarFullPage ? 'Réduire la bibliothèque' : 'Afficher en pleine page'}
-            onClick={() => onToggleFullPage(!sidebarFullPage)}
+        <Flex gap={4} align="center">
+          <SyncDeezerButton size="sm" tooltipPosition="left" />
+          <Tooltip
+            label={sidebarFullPage ? 'Réduire' : 'Pleine page'}
+            position="left"
           >
-            {sidebarFullPage ? (
-              <ArrowsInSimpleIcon weight="regular" />
-            ) : (
-              <ArrowsOutSimpleIcon weight="regular" />
-            )}
-          </ActionIcon>
-        </Tooltip>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              aria-label={
+                sidebarFullPage
+                  ? 'Réduire la bibliothèque'
+                  : 'Afficher en pleine page'
+              }
+              onClick={() => onToggleFullPage(!sidebarFullPage)}
+            >
+              {sidebarFullPage ? (
+                <ArrowsInSimpleIcon />
+              ) : (
+                <ArrowsOutSimpleIcon />
+              )}
+            </ActionIcon>
+          </Tooltip>
+        </Flex>
       </Flex>
 
       <Accordion multiple defaultValue={['raccourcis', 'bibliotheque']}>
@@ -164,18 +192,26 @@ function SidebarNormal({
                 <Flex justify="space-between" align="center">
                   <Tooltip label="Trier" position="top">
                     <ActionIcon variant="subtle" size="sm" aria-label="Trier">
-                      <SortAscendingIcon weight="regular" />
+                      <SortAscendingIcon />
                     </ActionIcon>
                   </Tooltip>
                   <Flex gap="xs">
                     <Tooltip label="Vue liste" position="top">
-                      <ActionIcon variant="subtle" size="sm" aria-label="Vue liste">
-                        <ListIcon weight="regular" />
+                      <ActionIcon
+                        variant="subtle"
+                        size="sm"
+                        aria-label="Vue liste"
+                      >
+                        <ListIcon />
                       </ActionIcon>
                     </Tooltip>
                     <Tooltip label="Vue grille" position="top">
-                      <ActionIcon variant="subtle" size="sm" aria-label="Vue grille">
-                        <GridFourIcon weight="regular" />
+                      <ActionIcon
+                        variant="subtle"
+                        size="sm"
+                        aria-label="Vue grille"
+                      >
+                        <GridFourIcon />
                       </ActionIcon>
                     </Tooltip>
                   </Flex>
@@ -189,11 +225,20 @@ function SidebarNormal({
 
           <Flex
             pos="absolute"
-            style={{ top: 0, right: '2.5rem', height: '2.75rem', alignItems: 'center' }}
+            style={{
+              top: 0,
+              right: '2.5rem',
+              height: '2.75rem',
+              alignItems: 'center',
+            }}
           >
             <Tooltip label="Ajouter" position="top">
-              <ActionIcon variant="subtle" size="sm" aria-label="Ajouter à la bibliothèque">
-                <PlusCircleIcon weight="regular" />
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                aria-label="Ajouter à la bibliothèque"
+              >
+                <PlusCircleIcon />
               </ActionIcon>
             </Tooltip>
           </Flex>
@@ -234,7 +279,9 @@ export function Sidebar() {
    * franchissement du seuil (max 1-2 re-renders par drag, pas un par pixel).
    * `null` en dehors d'un drag.
    */
-  const [dragCategory, setDragCategory] = useState<'reduced' | 'normal' | null>(null);
+  const [dragCategory, setDragCategory] = useState<'reduced' | 'normal' | null>(
+    null,
+  );
 
   const isReduced =
     !sidebarFullPage &&
@@ -250,7 +297,9 @@ export function Sidebar() {
     e.currentTarget.setPointerCapture(e.pointerId);
     dragStart.current = { x: e.clientX, width: sidebarWidth };
     pending.current = null;
-    setDragCategory(sidebarWidth <= SIDEBAR_WIDTH_REDUCED ? 'reduced' : 'normal');
+    setDragCategory(
+      sidebarWidth <= SIDEBAR_WIDTH_REDUCED ? 'reduced' : 'normal',
+    );
   }
 
   /**
@@ -272,7 +321,8 @@ export function Sidebar() {
       setDragCategory('normal');
     } else {
       const snapped = snapSidebarWidth(raw, max);
-      const cat: 'reduced' | 'normal' = snapped <= SIDEBAR_WIDTH_REDUCED ? 'reduced' : 'normal';
+      const cat: 'reduced' | 'normal' =
+        snapped <= SIDEBAR_WIDTH_REDUCED ? 'reduced' : 'normal';
       // flushSync : React re-render synchrone avant setNavbarWidthVar →
       // contenu et largeur mis à jour dans le même frame navigateur, sans flash.
       if (dragCategory !== cat) {

@@ -26,17 +26,17 @@ export function TopBar() {
         <Flex align="center" gap="xs" style={{ flexShrink: 0 }}>
           <Tooltip label="Précédent" position="bottom">
             <ActionIcon variant="subtle" aria-label="Précédent">
-              <ArrowLeftIcon weight="bold" />
+              <ArrowLeftIcon />
             </ActionIcon>
           </Tooltip>
           <Tooltip label="Suivant" position="bottom">
             <ActionIcon variant="subtle" aria-label="Suivant">
-              <ArrowRightIcon weight="bold" />
+              <ArrowRightIcon />
             </ActionIcon>
           </Tooltip>
           <Tooltip label="Recharger" position="bottom">
             <ActionIcon variant="subtle" aria-label="Recharger">
-              <ArrowsClockwiseIcon weight="bold" />
+              <ArrowsClockwiseIcon />
             </ActionIcon>
           </Tooltip>
         </Flex>
