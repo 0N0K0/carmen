@@ -23,6 +23,7 @@ import {
 } from '@phosphor-icons/react';
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { Link } from 'react-router-dom';
 import {
   MAIN_CONTENT_MIN_WIDTH,
   SIDEBAR_WIDTH_NORMAL_MIN,
@@ -92,8 +93,8 @@ function SidebarReduced({ onExpand }: { onExpand: () => void }) {
           <BookmarkSimpleIcon weight="fill" />
         </ActionIcon>
       </Tooltip>
-      <Tooltip label="Bibliothèque" position="right">
-        <ActionIcon variant="subtle" aria-label="Bibliothèque">
+      <Tooltip label="Ma bibliothèque" position="right">
+        <ActionIcon component={Link} to="/library" variant="subtle" aria-label="Ma bibliothèque">
           <PlaylistIcon weight="fill" />
         </ActionIcon>
       </Tooltip>
