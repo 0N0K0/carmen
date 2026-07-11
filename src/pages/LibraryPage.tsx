@@ -187,6 +187,8 @@ export function LibraryPage() {
   return (
     <Box p="md">
       <Stack gap="xl">
+        <Title order={1}>Bibliothèque</Title>
+
         <LibrarySection
           title="Playlists"
           loading={playlistsLoading}
