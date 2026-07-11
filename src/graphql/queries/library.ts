@@ -9,6 +9,7 @@ export const GET_PLAYLISTS = gql`
         title
         picture
         public
+        isLovedTrack
       }
       pagination {
         offset

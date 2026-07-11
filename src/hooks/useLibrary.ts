@@ -18,6 +18,31 @@ interface LibraryPage<T> {
   pagination: LibraryPagination;
 }
 
+/** Playlist telle que renvoyée par `GET_PLAYLISTS`. */
+export interface PlaylistSummary {
+  id: string;
+  title: string;
+  picture?: string | null;
+  public?: boolean | null;
+  isLovedTrack?: boolean | null;
+}
+
+/** Album favori tel que renvoyé par `GET_ALBUMS`. */
+export interface AlbumSummary {
+  id: string;
+  title: string;
+  cover?: string | null;
+  artist?: { id: string; name: string } | null;
+}
+
+/** Artiste favori tel que renvoyé par `GET_ARTISTS`. */
+export interface ArtistSummary {
+  id: string;
+  name: string;
+  picture?: string | null;
+  nbAlbum?: number | null;
+}
+
 /**
  * Charge une unique page d'une ressource paginée, triée par le serveur.
  * @param {import('@apollo/client').DocumentNode} query Query GraphQL paginée (`{ items, pagination }`).
@@ -107,7 +132,7 @@ function usePaginatedAll<T>(
 export function usePlaylists(page = 1, pageSize = 50, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePage(
     GET_PLAYLISTS,
-    (data) => (data as { playlists: LibraryPage<unknown> }).playlists,
+    (data) => (data as { playlists: LibraryPage<PlaylistSummary> }).playlists,
     page,
     pageSize,
     orderBy,
@@ -125,7 +150,7 @@ export function usePlaylists(page = 1, pageSize = 50, orderBy: LibrarySortOrder 
 export function useAlbums(page = 1, pageSize = 50, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePage(
     GET_ALBUMS,
-    (data) => (data as { albums: LibraryPage<unknown> }).albums,
+    (data) => (data as { albums: LibraryPage<AlbumSummary> }).albums,
     page,
     pageSize,
     orderBy,
@@ -143,7 +168,7 @@ export function useAlbums(page = 1, pageSize = 50, orderBy: LibrarySortOrder = '
 export function useArtists(page = 1, pageSize = 50, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePage(
     GET_ARTISTS,
-    (data) => (data as { artists: LibraryPage<unknown> }).artists,
+    (data) => (data as { artists: LibraryPage<ArtistSummary> }).artists,
     page,
     pageSize,
     orderBy,
@@ -160,7 +185,7 @@ export function useArtists(page = 1, pageSize = 50, orderBy: LibrarySortOrder = 
 export function useAllPlaylists(pageSize = 100, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePaginatedAll(
     GET_PLAYLISTS,
-    (data) => (data as { playlists: LibraryPage<unknown> }).playlists,
+    (data) => (data as { playlists: LibraryPage<PlaylistSummary> }).playlists,
     pageSize,
     orderBy,
   );
@@ -176,7 +201,7 @@ export function useAllPlaylists(pageSize = 100, orderBy: LibrarySortOrder = 'ASC
 export function useAllAlbums(pageSize = 100, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePaginatedAll(
     GET_ALBUMS,
-    (data) => (data as { albums: LibraryPage<unknown> }).albums,
+    (data) => (data as { albums: LibraryPage<AlbumSummary> }).albums,
     pageSize,
     orderBy,
   );
@@ -192,7 +217,7 @@ export function useAllAlbums(pageSize = 100, orderBy: LibrarySortOrder = 'ASC') 
 export function useAllArtists(pageSize = 100, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePaginatedAll(
     GET_ARTISTS,
-    (data) => (data as { artists: LibraryPage<unknown> }).artists,
+    (data) => (data as { artists: LibraryPage<ArtistSummary> }).artists,
     pageSize,
     orderBy,
   );
