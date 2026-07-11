@@ -23,7 +23,7 @@ import {
 } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { LibrarySortOrder } from '../../hooks/useLibrary';
 
 /** Nombre d'éléments par page dans les carrousels de la vue d'ensemble. */
@@ -50,6 +50,7 @@ type EmblaApi = Parameters<NonNullable<CarouselProps['getEmblaApi']>>[0];
  * @param {ReactNode} props.fallback Icône affichée si `image` est absent.
  * @param {string} props.title Libellé principal.
  * @param {string} [props.subtitle] Libellé secondaire. Optionnel.
+ * @param {string} [props.to] Route de navigation au clic. Optionnel — carte non cliquable si absent.
  * @returns {JSX.Element} Carte d'élément de bibliothèque.
  */
 export function LibraryItemCard({
@@ -57,14 +58,16 @@ export function LibraryItemCard({
   fallback,
   title,
   subtitle,
+  to,
 }: {
   image?: string | null;
   fallback: ReactNode;
   title: string;
   subtitle?: string;
+  to?: string;
 }) {
-  return (
-    <Card padding="sm" radius="md" withBorder>
+  const content = (
+    <>
       <Card.Section>
         <Avatar src={image} radius="md" size="100%" style={{ aspectRatio: '1 / 1' }}>
           {fallback}
@@ -78,6 +81,20 @@ export function LibraryItemCard({
           {subtitle}
         </Text>
       )}
+    </>
+  );
+
+  if (to) {
+    return (
+      <Card component={Link} to={to} padding="sm" radius="md" withBorder>
+        {content}
+      </Card>
+    );
+  }
+
+  return (
+    <Card padding="sm" radius="md" withBorder>
+      {content}
     </Card>
   );
 }

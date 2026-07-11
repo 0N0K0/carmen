@@ -1,28 +1,40 @@
 import { gql } from '@apollo/client';
 
-/** Récupère une playlist et ses tracks par son identifiant. */
+/**
+ * Récupère une playlist et une page de ses tracks par son identifiant.
+ * `Playlist.tracks` est paginé côté serveur (`TrackPage!`, 100 max par
+ * appel) — `usePlaylist` enchaîne les pages jusqu'à charger la tracklist complète.
+ */
 export const GET_PLAYLIST = gql`
-  query GetPlaylist($id: ID!) {
+  query GetPlaylist($id: ID!, $tracksLimit: Int, $tracksOffset: Int) {
     playlist(id: $id) {
       id
       title
       description
       picture
+      duration
       public
       collaborative
       fans
-      tracks {
-        id
-        title
-        duration
-        artist {
-          id
-          name
-        }
-        album {
+      tracks(limit: $tracksLimit, offset: $tracksOffset) {
+        items {
           id
           title
-          cover
+          duration
+          artist {
+            id
+            name
+          }
+          album {
+            id
+            title
+            cover
+          }
+        }
+        pagination {
+          offset
+          limit
+          total
         }
       }
     }
