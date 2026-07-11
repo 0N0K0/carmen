@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Badge,
   Box,
   Button,
   Flex,
@@ -8,9 +9,11 @@ import {
   Table,
   Text,
   Title,
+  Tooltip,
 } from '@mantine/core';
-import { PlayIcon, PlaylistIcon } from '@phosphor-icons/react';
+import { HeartIcon, PlayIcon, PlaylistIcon } from '@phosphor-icons/react';
 import { useParams } from 'react-router-dom';
+import type { PlaylistTrack } from '../hooks/useDetail';
 import { usePlaylist } from '../hooks/useDetail';
 import { formatTotalDuration, formatTrackDuration } from '../utils';
 
@@ -72,13 +75,7 @@ export function PlaylistPage() {
     );
   }
 
-  const tracks = playlist.tracks as {
-    id: string;
-    title: string;
-    duration: number;
-    artist?: { id: string; name: string } | null;
-    album?: { id: string; title: string; cover?: string | null } | null;
-  }[];
+  const tracks = playlist.tracks as PlaylistTrack[];
 
   return (
     <Box p="md">
@@ -110,6 +107,7 @@ export function PlaylistPage() {
           <Table.Thead>
             <Table.Tr>
               <Table.Th>#</Table.Th>
+              <Table.Th></Table.Th>
               <Table.Th>Titre</Table.Th>
               <Table.Th>Artiste</Table.Th>
               <Table.Th>Album</Table.Th>
@@ -120,7 +118,25 @@ export function PlaylistPage() {
             {tracks.map((track, index) => (
               <Table.Tr key={track.id}>
                 <Table.Td>{index + 1}</Table.Td>
-                <Table.Td>{track.title}</Table.Td>
+                <Table.Td>
+                  {track.isFavorite && (
+                    <Tooltip label="Coup de cœur">
+                      <HeartIcon weight="fill" color="var(--mantine-color-error-6)" />
+                    </Tooltip>
+                  )}
+                </Table.Td>
+                <Table.Td>
+                  <Flex align="center" gap={6}>
+                    {track.title}
+                    {track.explicitLyrics && (
+                      <Tooltip label="Paroles explicites">
+                        <Badge size="xs" variant="filled" color="gray" radius="sm">
+                          E
+                        </Badge>
+                      </Tooltip>
+                    )}
+                  </Flex>
+                </Table.Td>
                 <Table.Td>{track.artist?.name}</Table.Td>
                 <Table.Td>{track.album?.title}</Table.Td>
                 <Table.Td ta="right">{formatTrackDuration(track.duration)}</Table.Td>

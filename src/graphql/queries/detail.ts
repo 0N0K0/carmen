@@ -21,6 +21,8 @@ export const GET_PLAYLIST = gql`
           id
           title
           duration
+          isFavorite
+          explicitLyrics
           artist {
             id
             name

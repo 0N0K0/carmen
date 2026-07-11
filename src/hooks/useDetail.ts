@@ -3,10 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 import { GET_ALBUM, GET_ARTIST, GET_PLAYLIST } from '../graphql/queries/detail';
 
 /** Track d'une playlist, tel que renvoyé par `GET_PLAYLIST`. */
-interface PlaylistTrack {
+export interface PlaylistTrack {
   id: string;
   title: string;
   duration: number;
+  isFavorite?: boolean | null;
+  explicitLyrics?: boolean | null;
   artist?: { id: string; name: string } | null;
   album?: { id: string; title: string; cover?: string | null } | null;
 }
