@@ -2,10 +2,16 @@ import {
   Accordion,
   ActionIcon,
   AppShell,
+  Avatar,
   Box,
   Flex,
   Scroller,
+  ScrollArea,
+  SimpleGrid,
+  Skeleton,
+  Stack,
   Tabs,
+  Text,
   TextInput,
   Tooltip,
 } from '@mantine/core';
@@ -20,9 +26,19 @@ import {
   PlaylistIcon,
   PlusCircleIcon,
   SortAscendingIcon,
+  SortDescendingIcon,
+  UserIcon,
+  VinylRecordIcon,
 } from '@phosphor-icons/react';
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { Link } from 'react-router-dom';
+import type { LibrarySortOrder } from '../../hooks/useLibrary';
+import {
+  useAllAlbums,
+  useAllArtists,
+  useAllPlaylists,
+} from '../../hooks/useLibrary';
 import {
   MAIN_CONTENT_MIN_WIDTH,
   SIDEBAR_WIDTH_NORMAL_MIN,
@@ -31,6 +47,118 @@ import {
   useLayoutStore,
 } from '../../store/layout';
 import { SyncDeezerButton } from '../ui/SyncDeezerButton';
+
+/** Élément normalisé affiché dans une liste de la sidebar. */
+interface SidebarLibraryItem {
+  id: string;
+  label: string;
+  image?: string | null;
+  /** Icône propre à l'élément — utilisée par l'onglet "Tout" qui mélange plusieurs types. */
+  icon?: React.ReactNode;
+}
+
+/** Mode d'affichage d'une liste de bibliothèque dans la sidebar. */
+type SidebarLibraryView = 'list' | 'grid';
+
+/**
+ * Liste compacte d'éléments de bibliothèque pour la sidebar : skeleton
+ * pendant le chargement, état vide explicite, sinon les éléments en liste
+ * (une ligne chacun) ou en grille (vignette + libellé), selon `view`. Le tri
+ * (titre/nom) est appliqué côté serveur — `items` arrive déjà trié.
+ * @param {SidebarLibraryItem[]} props.items Éléments à afficher, déjà triés.
+ * @param {boolean} props.loading Chargement en cours.
+ * @param {React.ReactNode} props.fallbackIcon Icône affichée si pas d'image et pas d'`item.icon`.
+ * @param {string} props.emptyMessage Message affiché si `items` est vide.
+ * @param {SidebarLibraryView} props.view Mode d'affichage (liste ou grille).
+ * @returns {JSX.Element} Liste ou état de chargement/vide.
+ */
+function SidebarLibraryList({
+  items,
+  loading,
+  fallbackIcon,
+  emptyMessage,
+  view,
+}: {
+  items: SidebarLibraryItem[];
+  loading: boolean;
+  fallbackIcon: React.ReactNode;
+  emptyMessage: string;
+  view: SidebarLibraryView;
+}) {
+  if (loading) {
+    return view === 'grid' ? (
+      <SimpleGrid
+        cols={3}
+        spacing="xs"
+        verticalSpacing="xs"
+        style={{ flex: 1, minHeight: 0 }}
+      >
+        {Array.from({ length: 6 }, (_, i) => (
+          <Skeleton key={i} radius="sm" style={{ aspectRatio: '1 / 1' }} />
+        ))}
+      </SimpleGrid>
+    ) : (
+      <Stack gap={4} style={{ flex: 1, minHeight: 0 }}>
+        {Array.from({ length: 5 }, (_, i) => (
+          <Skeleton key={i} h={32} radius="sm" />
+        ))}
+      </Stack>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <Box c="dimmed" fz="sm" style={{ flex: 1, minHeight: 0 }}>
+        {emptyMessage}
+      </Box>
+    );
+  }
+
+  if (view === 'grid') {
+    return (
+      <ScrollArea
+        style={{ flex: 1, minHeight: 0 }}
+        type="auto"
+        offsetScrollbars
+      >
+        <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
+          {items.map((item) => (
+            <Stack key={item.id} gap={4} align="center">
+              <Avatar
+                src={item.image}
+                radius="sm"
+                size="100%"
+                style={{ aspectRatio: '1 / 1' }}
+              >
+                {item.icon ?? fallbackIcon}
+              </Avatar>
+              <Text fz="xs" ta="center" lineClamp={1} w="100%">
+                {item.label}
+              </Text>
+            </Stack>
+          ))}
+        </SimpleGrid>
+      </ScrollArea>
+    );
+  }
+
+  return (
+    <ScrollArea style={{ flex: 1, minHeight: 0 }} type="auto" offsetScrollbars>
+      <Stack gap={2}>
+        {items.map((item) => (
+          <Flex key={item.id} align="center" gap="xs">
+            <Avatar src={item.image} size="sm" radius="sm">
+              {item.icon ?? fallbackIcon}
+            </Avatar>
+            <Text fz="sm" lineClamp={1}>
+              {item.label}
+            </Text>
+          </Flex>
+        ))}
+      </Stack>
+    </ScrollArea>
+  );
+}
 
 /**
  * Pixels au-delà du taquet haut à franchir volontairement pour activer la pleine page.
@@ -92,8 +220,13 @@ function SidebarReduced({ onExpand }: { onExpand: () => void }) {
           <BookmarkSimpleIcon weight="fill" />
         </ActionIcon>
       </Tooltip>
-      <Tooltip label="Bibliothèque" position="right">
-        <ActionIcon variant="subtle" aria-label="Bibliothèque">
+      <Tooltip label="Ma bibliothèque" position="right">
+        <ActionIcon
+          component={Link}
+          to="/library"
+          variant="subtle"
+          aria-label="Ma bibliothèque"
+        >
           <PlaylistIcon weight="fill" />
         </ActionIcon>
       </Tooltip>
@@ -118,9 +251,68 @@ function SidebarNormal({
   onReduce: () => void;
   onToggleFullPage: (v: boolean) => void;
 }) {
+  const [libraryTab, setLibraryTab] = useState('playlists');
+  const [libraryView, setLibraryView] = useState<SidebarLibraryView>('list');
+  const [librarySort, setLibrarySort] = useState<LibrarySortOrder>('ASC');
+  const [librarySearch, setLibrarySearch] = useState('');
+  const { playlists, loading: playlistsLoading } = useAllPlaylists(
+    100,
+    librarySort,
+  );
+  const { albums, loading: albumsLoading } = useAllAlbums(100, librarySort);
+  const { artists, loading: artistsLoading } = useAllArtists(100, librarySort);
+
+  const libraryLoading = playlistsLoading || albumsLoading || artistsLoading;
+
+  /** Fusion playlists/albums/artistes, triée, pour l'onglet "Tout" et la recherche (tous contextes). */
+  const mixedItems: SidebarLibraryItem[] = [
+    ...playlists.map(
+      (p: { id: string; title: string; picture?: string | null }) => ({
+        id: `playlist-${p.id}`,
+        label: p.title,
+        image: p.picture,
+        icon: <PlaylistIcon />,
+      }),
+    ),
+    ...albums.map(
+      (a: { id: string; title: string; cover?: string | null }) => ({
+        id: `album-${a.id}`,
+        label: a.title,
+        image: a.cover,
+        icon: <VinylRecordIcon />,
+      }),
+    ),
+    ...artists.map(
+      (a: { id: string; name: string; picture?: string | null }) => ({
+        id: `artist-${a.id}`,
+        label: a.name,
+        image: a.picture,
+        icon: <UserIcon />,
+      }),
+    ),
+  ].sort(
+    (a, b) => a.label.localeCompare(b.label) * (librarySort === 'ASC' ? 1 : -1),
+  );
+
+  const searchQuery = librarySearch.trim().toLowerCase();
+  const isSearching = searchQuery.length > 0;
+  const searchResults = isSearching
+    ? mixedItems.filter((item) =>
+        item.label.toLowerCase().includes(searchQuery),
+      )
+    : [];
+
   return (
-    <Box p="xs">
-      <Flex justify="space-between" align="center" mb={4}>
+    <Box
+      p="xs"
+      style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+    >
+      <Flex
+        justify="space-between"
+        align="center"
+        mb={4}
+        style={{ flexShrink: 0 }}
+      >
         {!sidebarFullPage && (
           <Tooltip label="Réduire la sidebar" position="right">
             <ActionIcon
@@ -159,8 +351,17 @@ function SidebarNormal({
         </Flex>
       </Flex>
 
-      <Accordion multiple defaultValue={['raccourcis', 'bibliotheque']}>
-        <Accordion.Item value="raccourcis">
+      <Accordion
+        multiple
+        defaultValue={['raccourcis', 'bibliotheque']}
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Accordion.Item value="raccourcis" style={{ flexShrink: 0 }}>
           <Accordion.Control>Raccourcis</Accordion.Control>
           <Accordion.Panel>
             <Box c="dimmed" fz="sm">
@@ -170,14 +371,54 @@ function SidebarNormal({
         </Accordion.Item>
 
         {/* Bouton Ajouter superposé pour éviter button > button */}
-        <Box pos="relative">
-          <Accordion.Item value="bibliotheque">
+        <Box
+          pos="relative"
+          style={{
+            flex: 1,
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <Accordion.Item
+            value="bibliotheque"
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
             <Accordion.Control>Bibliothèque</Accordion.Control>
-            <Accordion.Panel>
-              <Flex direction="column" gap="xs">
-                <Tabs defaultValue="playlists">
+            <Accordion.Panel
+              style={{
+                flex: 1,
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+              styles={{
+                content: {
+                  flex: 1,
+                  minHeight: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                },
+              }}
+            >
+              <Flex
+                direction="column"
+                gap="xs"
+                style={{ flex: 1, minHeight: 0 }}
+              >
+                <Tabs
+                  value={libraryTab}
+                  onChange={(v) => v && setLibraryTab(v)}
+                  style={{ flexShrink: 0 }}
+                >
                   <Tabs.List>
                     <Scroller>
+                      <Tabs.Tab value="tout">Tout</Tabs.Tab>
                       <Tabs.Tab value="playlists">Playlists</Tabs.Tab>
                       <Tabs.Tab value="albums">Albums</Tabs.Tab>
                       <Tabs.Tab value="artistes">Artistes</Tabs.Tab>
@@ -188,37 +429,145 @@ function SidebarNormal({
                 <TextInput
                   size="xs"
                   placeholder="Rechercher dans la bibliothèque…"
+                  value={librarySearch}
+                  onChange={(e) => setLibrarySearch(e.currentTarget.value)}
+                  style={{ flexShrink: 0 }}
                 />
-                <Flex justify="space-between" align="center">
-                  <Tooltip label="Trier" position="top">
-                    <ActionIcon variant="subtle" size="sm" aria-label="Trier">
-                      <SortAscendingIcon />
+                <Flex
+                  justify="space-between"
+                  align="center"
+                  style={{ flexShrink: 0 }}
+                >
+                  <Tooltip
+                    label={
+                      librarySort === 'ASC'
+                        ? 'Trier de A à Z'
+                        : 'Trier de Z à A'
+                    }
+                    position="top"
+                  >
+                    <ActionIcon
+                      variant="subtle"
+                      size="sm"
+                      aria-label="Trier"
+                      onClick={() =>
+                        setLibrarySort((s) => (s === 'ASC' ? 'DESC' : 'ASC'))
+                      }
+                    >
+                      {librarySort === 'ASC' ? (
+                        <SortAscendingIcon />
+                      ) : (
+                        <SortDescendingIcon />
+                      )}
                     </ActionIcon>
                   </Tooltip>
                   <Flex gap="xs">
                     <Tooltip label="Vue liste" position="top">
                       <ActionIcon
-                        variant="subtle"
+                        variant={libraryView === 'list' ? 'light' : 'subtle'}
                         size="sm"
                         aria-label="Vue liste"
+                        onClick={() => setLibraryView('list')}
                       >
                         <ListIcon />
                       </ActionIcon>
                     </Tooltip>
                     <Tooltip label="Vue grille" position="top">
                       <ActionIcon
-                        variant="subtle"
+                        variant={libraryView === 'grid' ? 'light' : 'subtle'}
                         size="sm"
                         aria-label="Vue grille"
+                        onClick={() => setLibraryView('grid')}
                       >
                         <GridFourIcon />
                       </ActionIcon>
                     </Tooltip>
                   </Flex>
                 </Flex>
-                <Box c="dimmed" fz="sm">
-                  Aucun élément
-                </Box>
+
+                {isSearching ? (
+                  <SidebarLibraryList
+                    items={searchResults}
+                    loading={libraryLoading}
+                    fallbackIcon={<PlaylistIcon />}
+                    emptyMessage="Aucun résultat."
+                    view={libraryView}
+                  />
+                ) : (
+                  <>
+                    {libraryTab === 'tout' && (
+                      <SidebarLibraryList
+                        items={mixedItems}
+                        loading={libraryLoading}
+                        fallbackIcon={<PlaylistIcon />}
+                        emptyMessage="Bibliothèque vide."
+                        view={libraryView}
+                      />
+                    )}
+                    {libraryTab === 'playlists' && (
+                      <SidebarLibraryList
+                        items={playlists.map(
+                          (p: {
+                            id: string;
+                            title: string;
+                            picture?: string | null;
+                          }) => ({
+                            id: p.id,
+                            label: p.title,
+                            image: p.picture,
+                          }),
+                        )}
+                        loading={playlistsLoading}
+                        fallbackIcon={<PlaylistIcon />}
+                        emptyMessage="Aucune playlist synchronisée."
+                        view={libraryView}
+                      />
+                    )}
+                    {libraryTab === 'albums' && (
+                      <SidebarLibraryList
+                        items={albums.map(
+                          (a: {
+                            id: string;
+                            title: string;
+                            cover?: string | null;
+                          }) => ({
+                            id: a.id,
+                            label: a.title,
+                            image: a.cover,
+                          }),
+                        )}
+                        loading={albumsLoading}
+                        fallbackIcon={<VinylRecordIcon />}
+                        emptyMessage="Aucun album synchronisé."
+                        view={libraryView}
+                      />
+                    )}
+                    {libraryTab === 'artistes' && (
+                      <SidebarLibraryList
+                        items={artists.map(
+                          (a: {
+                            id: string;
+                            name: string;
+                            picture?: string | null;
+                          }) => ({
+                            id: a.id,
+                            label: a.name,
+                            image: a.picture,
+                          }),
+                        )}
+                        loading={artistsLoading}
+                        fallbackIcon={<UserIcon />}
+                        emptyMessage="Aucun artiste synchronisé."
+                        view={libraryView}
+                      />
+                    )}
+                    {libraryTab === 'podcasts' && (
+                      <Box c="dimmed" fz="sm" style={{ flex: 1, minHeight: 0 }}>
+                        Aucun élément
+                      </Box>
+                    )}
+                  </>
+                )}
               </Flex>
             </Accordion.Panel>
           </Accordion.Item>
@@ -396,7 +745,7 @@ export function Sidebar() {
         {isReduced ? (
           <SidebarReduced onExpand={toggleReduced} />
         ) : (
-          <Box style={{ minWidth: SIDEBAR_WIDTH_NORMAL_MIN }}>
+          <Box style={{ minWidth: SIDEBAR_WIDTH_NORMAL_MIN, height: '100%' }}>
             <SidebarNormal
               sidebarFullPage={sidebarFullPage}
               onReduce={toggleReduced}

@@ -6,8 +6,10 @@ import {
   CompassIcon,
   HouseIcon,
   MagnifyingGlassIcon,
+  PlaylistIcon,
   UserCircleIcon,
 } from '@phosphor-icons/react';
+import { Link } from 'react-router-dom';
 
 /**
  * Barre supérieure de l'application, divisée en trois zones.
@@ -44,7 +46,7 @@ export function TopBar() {
         {/* Zone centrale : accueil + recherche + explorer */}
         <Flex align="center" gap="xs" style={{ flex: 1, maxWidth: '40rem' }}>
           <Tooltip label="Accueil" position="bottom">
-            <ActionIcon variant="subtle" aria-label="Accueil">
+            <ActionIcon component={Link} to="/" variant="subtle" aria-label="Accueil">
               <HouseIcon weight="fill" />
             </ActionIcon>
           </Tooltip>
@@ -57,6 +59,16 @@ export function TopBar() {
           <Tooltip label="Explorer" position="bottom">
             <ActionIcon variant="subtle" aria-label="Explorer">
               <CompassIcon weight="fill" />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Ma bibliothèque" position="bottom">
+            <ActionIcon
+              component={Link}
+              to="/library"
+              variant="subtle"
+              aria-label="Ma bibliothèque"
+            >
+              <PlaylistIcon weight="fill" />
             </ActionIcon>
           </Tooltip>
         </Flex>
