@@ -1,9 +1,9 @@
 import { gql } from '@apollo/client';
 
-/** Récupère les playlists synchronisées en base, paginées. */
+/** Récupère les playlists synchronisées en base, paginées et triées par titre. */
 export const GET_PLAYLISTS = gql`
-  query GetPlaylists($limit: Int, $offset: Int) {
-    playlists(limit: $limit, offset: $offset) {
+  query GetPlaylists($limit: Int, $offset: Int, $orderBy: SortOrder) {
+    playlists(limit: $limit, offset: $offset, orderBy: $orderBy) {
       items {
         id
         title
@@ -19,10 +19,10 @@ export const GET_PLAYLISTS = gql`
   }
 `;
 
-/** Récupère les albums favoris synchronisés en base, paginés. */
+/** Récupère les albums favoris synchronisés en base, paginés et triés par titre. */
 export const GET_ALBUMS = gql`
-  query GetAlbums($limit: Int, $offset: Int) {
-    albums(limit: $limit, offset: $offset, favoritesOnly: true) {
+  query GetAlbums($limit: Int, $offset: Int, $orderBy: SortOrder) {
+    albums(limit: $limit, offset: $offset, favoritesOnly: true, orderBy: $orderBy) {
       items {
         id
         title
@@ -41,10 +41,10 @@ export const GET_ALBUMS = gql`
   }
 `;
 
-/** Récupère les artistes favoris synchronisés en base, paginés. */
+/** Récupère les artistes favoris synchronisés en base, paginés et triés par nom. */
 export const GET_ARTISTS = gql`
-  query GetArtists($limit: Int, $offset: Int) {
-    artists(limit: $limit, offset: $offset, favoritesOnly: true) {
+  query GetArtists($limit: Int, $offset: Int, $orderBy: SortOrder) {
+    artists(limit: $limit, offset: $offset, favoritesOnly: true, orderBy: $orderBy) {
       items {
         id
         name

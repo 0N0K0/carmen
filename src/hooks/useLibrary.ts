@@ -9,6 +9,9 @@ export interface LibraryPagination {
   total: number;
 }
 
+/** Sens de tri par titre/nom (`SortOrder` GraphQL). D'autres critères de tri pourront s'ajouter plus tard. */
+export type LibrarySortOrder = 'ASC' | 'DESC';
+
 /** Page de résultats paginés renvoyée par les queries de bibliothèque. */
 interface LibraryPage<T> {
   items: T[];
@@ -16,11 +19,12 @@ interface LibraryPage<T> {
 }
 
 /**
- * Charge une unique page d'une ressource paginée.
+ * Charge une unique page d'une ressource paginée, triée par le serveur.
  * @param {import('@apollo/client').DocumentNode} query Query GraphQL paginée (`{ items, pagination }`).
  * @param {(data: any) => LibraryPage<T>} selectPage Extrait la page depuis la réponse GraphQL.
  * @param {number} page Numéro de page (1-indexé).
  * @param {number} pageSize Nombre d'éléments par page.
+ * @param {LibrarySortOrder} orderBy Sens de tri (titre/nom).
  * @returns {{ items: T[], pagination: LibraryPagination | undefined, loading: boolean, error: Error | undefined }} Éléments de la page courante et état de chargement.
  */
 function usePage<T>(
@@ -28,9 +32,10 @@ function usePage<T>(
   selectPage: (data: unknown) => LibraryPage<T>,
   page: number,
   pageSize: number,
+  orderBy: LibrarySortOrder,
 ) {
   const { data, loading, error } = useQuery(query, {
-    variables: { limit: pageSize, offset: (page - 1) * pageSize },
+    variables: { limit: pageSize, offset: (page - 1) * pageSize, orderBy },
   });
   const result = data ? selectPage(data) : undefined;
   return { items: result?.items ?? [], pagination: result?.pagination, loading, error };
@@ -46,19 +51,30 @@ function usePage<T>(
  * @param {import('@apollo/client').DocumentNode} query Query GraphQL paginée (`{ items, pagination }`).
  * @param {(data: any) => LibraryPage<T>} selectPage Extrait la page depuis la réponse GraphQL.
  * @param {number} pageSize Taille de page utilisée pour chaque requête.
+ * @param {LibrarySortOrder} orderBy Sens de tri (titre/nom).
  * @returns {{ items: T[], pagination: LibraryPagination | undefined, loading: boolean, error: Error | undefined }} Éléments accumulés et état de chargement.
  */
 function usePaginatedAll<T>(
   query: Parameters<typeof useQuery>[0],
   selectPage: (data: unknown) => LibraryPage<T>,
   pageSize: number,
+  orderBy: LibrarySortOrder,
 ) {
   const { data, loading, error, fetchMore } = useQuery(query, {
-    variables: { limit: pageSize, offset: 0 },
+    variables: { limit: pageSize, offset: 0, orderBy },
   });
   /** Éléments accumulés au-delà de la première page (pages 2+). */
   const [extraItems, setExtraItems] = useState<T[]>([]);
   const fetching = useRef(false);
+
+  // Le tri change l'ordre global : les pages déjà accumulées avec l'ancien tri ne sont plus
+  // valables. Reset synchrone pendant le rendu (pattern React "adjusting state on prop change"),
+  // pas d'effet, pour éviter un rendu intermédiaire avec des données mélangées.
+  const [prevOrderBy, setPrevOrderBy] = useState(orderBy);
+  if (prevOrderBy !== orderBy) {
+    setPrevOrderBy(orderBy);
+    setExtraItems([]);
+  }
 
   const firstPage = data ? selectPage(data) : undefined;
   const items = firstPage ? [...firstPage.items, ...extraItems] : [];
@@ -83,48 +99,54 @@ function usePaginatedAll<T>(
 
 /**
  * Charge une page de playlists synchronisées en base.
- * @param {number} [page=1] Numéro de page (1-indexé).
+ * @param {number} [page=1] Numéro de page (1-indexée).
  * @param {number} [pageSize=50] Nombre d'éléments par page.
+ * @param {LibrarySortOrder} [orderBy='ASC'] Sens de tri par titre.
  * @returns {{ playlists: object[], pagination: LibraryPagination | undefined, loading: boolean, error: Error | undefined }} Playlists de la page courante et état de chargement.
  */
-export function usePlaylists(page = 1, pageSize = 50) {
+export function usePlaylists(page = 1, pageSize = 50, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePage(
     GET_PLAYLISTS,
     (data) => (data as { playlists: LibraryPage<unknown> }).playlists,
     page,
     pageSize,
+    orderBy,
   );
   return { playlists: items, pagination, loading, error };
 }
 
 /**
  * Charge une page d'albums favoris synchronisés en base.
- * @param {number} [page=1] Numéro de page (1-indexé).
+ * @param {number} [page=1] Numéro de page (1-indexée).
  * @param {number} [pageSize=50] Nombre d'éléments par page.
+ * @param {LibrarySortOrder} [orderBy='ASC'] Sens de tri par titre.
  * @returns {{ albums: object[], pagination: LibraryPagination | undefined, loading: boolean, error: Error | undefined }} Albums de la page courante et état de chargement.
  */
-export function useAlbums(page = 1, pageSize = 50) {
+export function useAlbums(page = 1, pageSize = 50, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePage(
     GET_ALBUMS,
     (data) => (data as { albums: LibraryPage<unknown> }).albums,
     page,
     pageSize,
+    orderBy,
   );
   return { albums: items, pagination, loading, error };
 }
 
 /**
  * Charge une page d'artistes favoris synchronisés en base.
- * @param {number} [page=1] Numéro de page (1-indexé).
+ * @param {number} [page=1] Numéro de page (1-indexée).
  * @param {number} [pageSize=50] Nombre d'éléments par page.
+ * @param {LibrarySortOrder} [orderBy='ASC'] Sens de tri par nom.
  * @returns {{ artists: object[], pagination: LibraryPagination | undefined, loading: boolean, error: Error | undefined }} Artistes de la page courante et état de chargement.
  */
-export function useArtists(page = 1, pageSize = 50) {
+export function useArtists(page = 1, pageSize = 50, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePage(
     GET_ARTISTS,
     (data) => (data as { artists: LibraryPage<unknown> }).artists,
     page,
     pageSize,
+    orderBy,
   );
   return { artists: items, pagination, loading, error };
 }
@@ -132,13 +154,15 @@ export function useArtists(page = 1, pageSize = 50) {
 /**
  * Charge la totalité des playlists synchronisées en base (sidebar).
  * @param {number} [pageSize=100] Taille de page utilisée pour chaque requête réseau.
+ * @param {LibrarySortOrder} [orderBy='ASC'] Sens de tri par titre.
  * @returns {{ playlists: object[], pagination: LibraryPagination | undefined, loading: boolean, error: Error | undefined }} Playlists et état de chargement.
  */
-export function useAllPlaylists(pageSize = 100) {
+export function useAllPlaylists(pageSize = 100, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePaginatedAll(
     GET_PLAYLISTS,
     (data) => (data as { playlists: LibraryPage<unknown> }).playlists,
     pageSize,
+    orderBy,
   );
   return { playlists: items, pagination, loading, error };
 }
@@ -146,13 +170,15 @@ export function useAllPlaylists(pageSize = 100) {
 /**
  * Charge la totalité des albums favoris synchronisés en base (sidebar).
  * @param {number} [pageSize=100] Taille de page utilisée pour chaque requête réseau.
+ * @param {LibrarySortOrder} [orderBy='ASC'] Sens de tri par titre.
  * @returns {{ albums: object[], pagination: LibraryPagination | undefined, loading: boolean, error: Error | undefined }} Albums et état de chargement.
  */
-export function useAllAlbums(pageSize = 100) {
+export function useAllAlbums(pageSize = 100, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePaginatedAll(
     GET_ALBUMS,
     (data) => (data as { albums: LibraryPage<unknown> }).albums,
     pageSize,
+    orderBy,
   );
   return { albums: items, pagination, loading, error };
 }
@@ -160,13 +186,15 @@ export function useAllAlbums(pageSize = 100) {
 /**
  * Charge la totalité des artistes favoris synchronisés en base (sidebar).
  * @param {number} [pageSize=100] Taille de page utilisée pour chaque requête réseau.
+ * @param {LibrarySortOrder} [orderBy='ASC'] Sens de tri par nom.
  * @returns {{ artists: object[], pagination: LibraryPagination | undefined, loading: boolean, error: Error | undefined }} Artistes et état de chargement.
  */
-export function useAllArtists(pageSize = 100) {
+export function useAllArtists(pageSize = 100, orderBy: LibrarySortOrder = 'ASC') {
   const { items, pagination, loading, error } = usePaginatedAll(
     GET_ARTISTS,
     (data) => (data as { artists: LibraryPage<unknown> }).artists,
     pageSize,
+    orderBy,
   );
   return { artists: items, pagination, loading, error };
 }

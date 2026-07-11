@@ -1,17 +1,27 @@
 import {
+  ActionIcon,
   Avatar,
   Box,
   Card,
+  Flex,
   Pagination,
   SimpleGrid,
   Skeleton,
   Stack,
   Text,
   Title,
+  Tooltip,
 } from '@mantine/core';
-import { PlaylistIcon, UserIcon, VinylRecordIcon } from '@phosphor-icons/react';
+import {
+  PlaylistIcon,
+  SortAscendingIcon,
+  SortDescendingIcon,
+  UserIcon,
+  VinylRecordIcon,
+} from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
+import type { LibrarySortOrder } from '../hooks/useLibrary';
 import { useAlbums, useArtists, usePlaylists } from '../hooks/useLibrary';
 
 const SKELETON_COUNT = 6;
@@ -73,9 +83,10 @@ function LibrarySkeletonGrid() {
 }
 
 /**
- * Section de la bibliothèque : titre, grille d'éléments, skeleton pendant le
- * chargement, état vide explicite si la liste est vide, pagination si plus
- * d'une page de résultats.
+ * Section de la bibliothèque : titre + bouton de tri (sur la même ligne),
+ * grille d'éléments, skeleton pendant le chargement, état vide explicite si
+ * la liste est vide, pagination si plus d'une page de résultats. Le tri
+ * (titre/nom) est appliqué côté serveur — `children` arrive déjà trié.
  * @param {string} props.title Titre de la section.
  * @param {boolean} props.loading Section en cours de chargement.
  * @param {ReactNode} props.emptyIcon Icône affichée dans l'état vide.
@@ -83,7 +94,9 @@ function LibrarySkeletonGrid() {
  * @param {number} props.page Page courante (1-indexée).
  * @param {(page: number) => void} props.onPageChange Change la page courante.
  * @param {number} props.totalPages Nombre total de pages.
- * @param {ReactNode[]} props.children Cartes d'éléments à afficher.
+ * @param {LibrarySortOrder} props.sort Sens de tri courant (titre/nom).
+ * @param {() => void} props.onToggleSort Inverse le sens de tri.
+ * @param {ReactNode[]} props.children Cartes d'éléments à afficher, déjà triées.
  * @returns {JSX.Element} Section de bibliothèque.
  */
 function LibrarySection({
@@ -94,6 +107,8 @@ function LibrarySection({
   page,
   onPageChange,
   totalPages,
+  sort,
+  onToggleSort,
   children,
 }: {
   title: string;
@@ -103,13 +118,22 @@ function LibrarySection({
   page: number;
   onPageChange: (page: number) => void;
   totalPages: number;
+  sort: LibrarySortOrder;
+  onToggleSort: () => void;
   children: ReactNode[];
 }) {
   return (
     <Stack gap="sm">
-      <Title order={2} fz="lg">
-        {title}
-      </Title>
+      <Flex align="center" gap="xs">
+        <Title order={2} fz="lg">
+          {title}
+        </Title>
+        <Tooltip label={sort === 'ASC' ? 'Trier de A à Z' : 'Trier de Z à A'}>
+          <ActionIcon variant="subtle" size="sm" aria-label="Trier" onClick={onToggleSort}>
+            {sort === 'ASC' ? <SortAscendingIcon /> : <SortDescendingIcon />}
+          </ActionIcon>
+        </Tooltip>
+      </Flex>
       {loading ? (
         <LibrarySkeletonGrid />
       ) : children.length === 0 ? (
@@ -140,17 +164,24 @@ export function LibraryPage() {
   const [albumsPage, setAlbumsPage] = useState(1);
   const [artistsPage, setArtistsPage] = useState(1);
 
+  const [playlistsSort, setPlaylistsSort] = useState<LibrarySortOrder>('ASC');
+  const [albumsSort, setAlbumsSort] = useState<LibrarySortOrder>('ASC');
+  const [artistsSort, setArtistsSort] = useState<LibrarySortOrder>('ASC');
+
   const { playlists, pagination: playlistsPagination, loading: playlistsLoading } = usePlaylists(
     playlistsPage,
     PAGE_SIZE,
+    playlistsSort,
   );
   const { albums, pagination: albumsPagination, loading: albumsLoading } = useAlbums(
     albumsPage,
     PAGE_SIZE,
+    albumsSort,
   );
   const { artists, pagination: artistsPagination, loading: artistsLoading } = useArtists(
     artistsPage,
     PAGE_SIZE,
+    artistsSort,
   );
 
   return (
@@ -164,6 +195,8 @@ export function LibraryPage() {
           page={playlistsPage}
           onPageChange={setPlaylistsPage}
           totalPages={Math.ceil((playlistsPagination?.total ?? 0) / PAGE_SIZE)}
+          sort={playlistsSort}
+          onToggleSort={() => setPlaylistsSort((s) => (s === 'ASC' ? 'DESC' : 'ASC'))}
         >
           {playlists.map((playlist: { id: string; title: string; picture?: string | null }) => (
             <LibraryItemCard
@@ -183,6 +216,8 @@ export function LibraryPage() {
           page={albumsPage}
           onPageChange={setAlbumsPage}
           totalPages={Math.ceil((albumsPagination?.total ?? 0) / PAGE_SIZE)}
+          sort={albumsSort}
+          onToggleSort={() => setAlbumsSort((s) => (s === 'ASC' ? 'DESC' : 'ASC'))}
         >
           {albums.map(
             (album: {
@@ -210,6 +245,8 @@ export function LibraryPage() {
           page={artistsPage}
           onPageChange={setArtistsPage}
           totalPages={Math.ceil((artistsPagination?.total ?? 0) / PAGE_SIZE)}
+          sort={artistsSort}
+          onToggleSort={() => setArtistsSort((s) => (s === 'ASC' ? 'DESC' : 'ASC'))}
         >
           {artists.map((artist: { id: string; name: string; picture?: string | null }) => (
             <LibraryItemCard
