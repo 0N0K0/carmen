@@ -3,6 +3,7 @@ import type { CarouselProps } from '@mantine/carousel';
 import {
   ActionIcon,
   Avatar,
+  Box,
   Card,
   Flex,
   Pagination,
@@ -13,6 +14,7 @@ import {
   Title,
   Tooltip,
 } from '@mantine/core';
+import { useIntersection } from '@mantine/hooks';
 import {
   CaretLeftIcon,
   CaretRightIcon,
@@ -20,12 +22,15 @@ import {
   SortDescendingIcon,
 } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { LibrarySortOrder } from '../../hooks/useLibrary';
 
-/** Nombre d'éléments par page dans les vues de bibliothèque paginées. */
+/** Nombre d'éléments par page dans les carrousels de la vue d'ensemble. */
 export const LIBRARY_PAGE_SIZE = 30;
+
+/** Nombre d'éléments chargés par appel dans les listes en infinite scroll. */
+export const LIBRARY_INFINITE_PAGE_SIZE = 100;
 
 /** Nombre de skeletons affichés pendant le chargement d'une section. */
 const SKELETON_COUNT = 6;
@@ -99,7 +104,7 @@ export function LibrarySkeletonGrid() {
  * grille d'éléments, skeleton pendant le chargement, état vide explicite si
  * la liste est vide, pagination si plus d'une page de résultats. Le tri
  * (titre/nom) est appliqué côté serveur — `children` arrive déjà trié.
- * @param {string} props.title Titre de la section.
+ * @param {string} props.title Titre de la section (inclut déjà le compte, ex. "742 playlists").
  * @param {boolean} props.loading Section en cours de chargement.
  * @param {ReactNode} props.emptyIcon Icône affichée dans l'état vide.
  * @param {string} props.emptyMessage Message affiché dans l'état vide.
@@ -283,6 +288,88 @@ export function LibraryCarouselSection({
             <Carousel.Slide key={i}>{child}</Carousel.Slide>
           ))}
         </Carousel>
+      )}
+    </Stack>
+  );
+}
+
+/**
+ * Section de bibliothèque en infinite scroll : titre + bouton de tri, grille
+ * d'éléments, skeleton pendant le chargement initial, état vide explicite,
+ * chargement automatique du bloc suivant quand un sentinel en bas de grille
+ * devient visible (pas de bouton de pagination). Le tri (titre/nom) est
+ * appliqué côté serveur — `children` arrive déjà trié.
+ * @param {string} props.title Titre de la section (inclut déjà le compte, ex. "742 playlists").
+ * @param {boolean} props.loading Chargement initial en cours.
+ * @param {boolean} props.loadingMore Chargement du bloc suivant en cours.
+ * @param {boolean} props.hasMore `true` s'il reste des éléments à charger.
+ * @param {() => void} props.onLoadMore Charge le bloc suivant.
+ * @param {ReactNode} props.emptyIcon Icône affichée dans l'état vide.
+ * @param {string} props.emptyMessage Message affiché dans l'état vide.
+ * @param {LibrarySortOrder} props.sort Sens de tri courant (titre/nom).
+ * @param {() => void} props.onToggleSort Inverse le sens de tri.
+ * @param {ReactNode[]} props.children Cartes d'éléments à afficher, déjà triées.
+ * @returns {JSX.Element} Section de bibliothèque en infinite scroll.
+ */
+export function LibraryInfiniteSection({
+  title,
+  loading,
+  loadingMore,
+  hasMore,
+  onLoadMore,
+  emptyIcon,
+  emptyMessage,
+  sort,
+  onToggleSort,
+  children,
+}: {
+  title: string;
+  loading: boolean;
+  loadingMore: boolean;
+  hasMore: boolean;
+  onLoadMore: () => void;
+  emptyIcon: ReactNode;
+  emptyMessage: string;
+  sort: LibrarySortOrder;
+  onToggleSort: () => void;
+  children: ReactNode[];
+}) {
+  const { ref: sentinelRef, entry } = useIntersection({ threshold: 0 });
+
+  useEffect(() => {
+    if (entry?.isIntersecting && hasMore && !loadingMore) {
+      onLoadMore();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entry?.isIntersecting, hasMore, loadingMore]);
+
+  return (
+    <Stack gap="sm">
+      <Flex align="center" gap="xs">
+        <Title order={2} fz="lg">
+          {title}
+        </Title>
+        <Tooltip label={sort === 'ASC' ? 'Trier de A à Z' : 'Trier de Z à A'}>
+          <ActionIcon variant="subtle" size="sm" aria-label="Trier" onClick={onToggleSort}>
+            {sort === 'ASC' ? <SortAscendingIcon /> : <SortDescendingIcon />}
+          </ActionIcon>
+        </Tooltip>
+      </Flex>
+      {loading ? (
+        <LibrarySkeletonGrid />
+      ) : children.length === 0 ? (
+        <Stack align="center" gap="xs" py="xl" c="dimmed">
+          {emptyIcon}
+          <Text fz="sm">{emptyMessage}</Text>
+        </Stack>
+      ) : (
+        <>
+          <SimpleGrid cols={{ base: 2, xs: 3, sm: 4, md: 6 }}>{children}</SimpleGrid>
+          {hasMore && (
+            <Box ref={sentinelRef} h={1} />
+          )}
+          {loadingMore && <LibrarySkeletonGrid />}
+        </>
       )}
     </Stack>
   );

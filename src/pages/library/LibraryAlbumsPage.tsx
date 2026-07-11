@@ -1,27 +1,33 @@
 import { VinylRecordIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import type { LibrarySortOrder } from '../../hooks/useLibrary';
-import { useAlbums } from '../../hooks/useLibrary';
-import { LIBRARY_PAGE_SIZE, LibraryItemCard, LibrarySection } from './components';
+import { useAlbumsInfinite, useLibraryStats } from '../../hooks/useLibrary';
+import { LIBRARY_INFINITE_PAGE_SIZE, LibraryInfiniteSection, LibraryItemCard } from './components';
+import { formatLibraryTitle } from './utils';
 
 /**
- * Page dédiée aux albums favoris, paginée et triable.
+ * Page dédiée aux albums favoris, triable, en infinite scroll. Le compte
+ * affiché dans le titre vient de `libraryStats` (total réel côté API), pas
+ * du nombre de lignes synchronisées en base.
  * @returns {JSX.Element} Page albums.
  */
 export function LibraryAlbumsPage() {
-  const [page, setPage] = useState(1);
   const [sort, setSort] = useState<LibrarySortOrder>('ASC');
-  const { albums, pagination, loading } = useAlbums(page, LIBRARY_PAGE_SIZE, sort);
+  const { albums, loading, loadingMore, hasMore, loadMore } = useAlbumsInfinite(
+    LIBRARY_INFINITE_PAGE_SIZE,
+    sort,
+  );
+  const { stats } = useLibraryStats();
 
   return (
-    <LibrarySection
-      title="Albums"
+    <LibraryInfiniteSection
+      title={formatLibraryTitle(stats?.favoriteAlbumsTotal, 'album', 'Albums')}
       loading={loading}
+      loadingMore={loadingMore}
+      hasMore={hasMore}
+      onLoadMore={loadMore}
       emptyIcon={<VinylRecordIcon size={32} />}
       emptyMessage="Aucun album synchronisé."
-      page={page}
-      onPageChange={setPage}
-      totalPages={Math.ceil((pagination?.total ?? 0) / LIBRARY_PAGE_SIZE)}
       sort={sort}
       onToggleSort={() => setSort((s) => (s === 'ASC' ? 'DESC' : 'ASC'))}
     >
@@ -41,6 +47,6 @@ export function LibraryAlbumsPage() {
           />
         ),
       )}
-    </LibrarySection>
+    </LibraryInfiniteSection>
   );
 }

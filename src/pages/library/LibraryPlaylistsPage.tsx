@@ -1,27 +1,33 @@
 import { PlaylistIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import type { LibrarySortOrder } from '../../hooks/useLibrary';
-import { usePlaylists } from '../../hooks/useLibrary';
-import { LIBRARY_PAGE_SIZE, LibraryItemCard, LibrarySection } from './components';
+import { useLibraryStats, usePlaylistsInfinite } from '../../hooks/useLibrary';
+import { LIBRARY_INFINITE_PAGE_SIZE, LibraryInfiniteSection, LibraryItemCard } from './components';
+import { formatLibraryTitle } from './utils';
 
 /**
- * Page dédiée aux playlists favorites, paginée et triable.
+ * Page dédiée aux playlists favorites, triable, en infinite scroll. Le
+ * compte affiché dans le titre vient de `libraryStats` (total réel côté
+ * API), pas du nombre de lignes synchronisées en base.
  * @returns {JSX.Element} Page playlists.
  */
 export function LibraryPlaylistsPage() {
-  const [page, setPage] = useState(1);
   const [sort, setSort] = useState<LibrarySortOrder>('ASC');
-  const { playlists, pagination, loading } = usePlaylists(page, LIBRARY_PAGE_SIZE, sort);
+  const { playlists, loading, loadingMore, hasMore, loadMore } = usePlaylistsInfinite(
+    LIBRARY_INFINITE_PAGE_SIZE,
+    sort,
+  );
+  const { stats } = useLibraryStats();
 
   return (
-    <LibrarySection
-      title="Playlists"
+    <LibraryInfiniteSection
+      title={formatLibraryTitle(stats?.playlistsTotal, 'playlist', 'Playlists')}
       loading={loading}
+      loadingMore={loadingMore}
+      hasMore={hasMore}
+      onLoadMore={loadMore}
       emptyIcon={<PlaylistIcon size={32} />}
       emptyMessage="Aucune playlist synchronisée."
-      page={page}
-      onPageChange={setPage}
-      totalPages={Math.ceil((pagination?.total ?? 0) / LIBRARY_PAGE_SIZE)}
       sort={sort}
       onToggleSort={() => setSort((s) => (s === 'ASC' ? 'DESC' : 'ASC'))}
     >
@@ -33,6 +39,6 @@ export function LibraryPlaylistsPage() {
           title={playlist.title}
         />
       ))}
-    </LibrarySection>
+    </LibraryInfiniteSection>
   );
 }

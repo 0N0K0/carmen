@@ -1,10 +1,12 @@
-import { Box, Stack, Tabs, Title } from '@mantine/core';
+import { Box, Stack, Tabs, Text, Title } from '@mantine/core';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useLibraryStats } from '../../hooks/useLibrary';
+import { formatDuration, formatLibraryTitle } from './utils';
 
 /** Onglets de navigation de la bibliothèque, dans l'ordre d'affichage. */
 const LIBRARY_NAV_ITEMS = [
   { value: 'overview', label: "Vue d'ensemble" },
-  { value: 'loved', label: 'Favoris' },
+  { value: 'loved', label: 'Coups de cœur' },
   { value: 'playlists', label: 'Playlists' },
   { value: 'albums', label: 'Albums' },
   { value: 'artists', label: 'Artistes' },
@@ -19,6 +21,7 @@ const LIBRARY_NAV_ITEMS = [
 export function LibraryLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { stats } = useLibraryStats();
 
   const segment = location.pathname.replace(/^\/library\/?/, '');
   const activeSegment = segment === '' ? 'overview' : segment;
@@ -28,10 +31,17 @@ export function LibraryLayout() {
       <Stack gap="xl">
         <Stack gap="sm">
           <Title order={1}>Bibliothèque</Title>
+          {stats && (
+            <Text c="dimmed">
+              {formatLibraryTitle(stats.tracksTotal, 'titre', '')} |{' '}
+              {formatDuration(stats.totalDurationMs)}
+            </Text>
+          )}
           <Tabs
             value={activeSegment}
             onChange={(v) =>
-              v !== null && navigate(v === 'overview' ? '/library' : `/library/${v}`)
+              v !== null &&
+              navigate(v === 'overview' ? '/library' : `/library/${v}`)
             }
           >
             <Tabs.List>

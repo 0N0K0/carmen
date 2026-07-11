@@ -1,27 +1,33 @@
 import { UserIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import type { LibrarySortOrder } from '../../hooks/useLibrary';
-import { useArtists } from '../../hooks/useLibrary';
-import { LIBRARY_PAGE_SIZE, LibraryItemCard, LibrarySection } from './components';
+import { useArtistsInfinite, useLibraryStats } from '../../hooks/useLibrary';
+import { LIBRARY_INFINITE_PAGE_SIZE, LibraryInfiniteSection, LibraryItemCard } from './components';
+import { formatLibraryTitle } from './utils';
 
 /**
- * Page dédiée aux artistes favoris, paginée et triable.
+ * Page dédiée aux artistes favoris, triable, en infinite scroll. Le compte
+ * affiché dans le titre vient de `libraryStats` (total réel côté API), pas
+ * du nombre de lignes synchronisées en base.
  * @returns {JSX.Element} Page artistes.
  */
 export function LibraryArtistsPage() {
-  const [page, setPage] = useState(1);
   const [sort, setSort] = useState<LibrarySortOrder>('ASC');
-  const { artists, pagination, loading } = useArtists(page, LIBRARY_PAGE_SIZE, sort);
+  const { artists, loading, loadingMore, hasMore, loadMore } = useArtistsInfinite(
+    LIBRARY_INFINITE_PAGE_SIZE,
+    sort,
+  );
+  const { stats } = useLibraryStats();
 
   return (
-    <LibrarySection
-      title="Artistes"
+    <LibraryInfiniteSection
+      title={formatLibraryTitle(stats?.favoriteArtistsTotal, 'artiste', 'Artistes')}
       loading={loading}
+      loadingMore={loadingMore}
+      hasMore={hasMore}
+      onLoadMore={loadMore}
       emptyIcon={<UserIcon size={32} />}
       emptyMessage="Aucun artiste synchronisé."
-      page={page}
-      onPageChange={setPage}
-      totalPages={Math.ceil((pagination?.total ?? 0) / LIBRARY_PAGE_SIZE)}
       sort={sort}
       onToggleSort={() => setSort((s) => (s === 'ASC' ? 'DESC' : 'ASC'))}
     >
@@ -33,6 +39,6 @@ export function LibraryArtistsPage() {
           title={artist.name}
         />
       ))}
-    </LibrarySection>
+    </LibraryInfiniteSection>
   );
 }
