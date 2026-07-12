@@ -47,6 +47,7 @@ import {
   useLayoutStore,
 } from '../../store/layout';
 import { SyncDeezerButton } from '../ui/SyncDeezerButton';
+import { toProxiedImageUrl } from '../../utils';
 
 /** Élément normalisé affiché dans une liste de la sidebar. */
 interface SidebarLibraryItem {
@@ -78,7 +79,12 @@ function SidebarGridCell({
 }) {
   const content = (
     <>
-      <Avatar src={item.image} radius="sm" size="100%" style={{ aspectRatio: '1 / 1' }}>
+      <Avatar
+        src={toProxiedImageUrl(item.image)}
+        radius="sm"
+        size="100%"
+        style={{ aspectRatio: '1 / 1' }}
+      >
         {item.icon ?? fallbackIcon}
       </Avatar>
       <Text fz="xs" ta="center" lineClamp={1} w="100%">
@@ -120,7 +126,7 @@ function SidebarListRow({
 }) {
   const content = (
     <>
-      <Avatar src={item.image} size="sm" radius="sm">
+      <Avatar src={toProxiedImageUrl(item.image)} size="sm" radius="sm">
         {item.icon ?? fallbackIcon}
       </Avatar>
       <Text fz="sm" lineClamp={1}>

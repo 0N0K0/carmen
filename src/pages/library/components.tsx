@@ -25,6 +25,7 @@ import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { LibrarySortOrder } from '../../hooks/useLibrary';
+import { toProxiedImageUrl } from '../../utils';
 
 /** Nombre d'éléments par page dans les carrousels de la vue d'ensemble. */
 export const LIBRARY_PAGE_SIZE = 30;
@@ -69,7 +70,12 @@ export function LibraryItemCard({
   const content = (
     <>
       <Card.Section>
-        <Avatar src={image} radius="md" size="100%" style={{ aspectRatio: '1 / 1' }}>
+        <Avatar
+          src={toProxiedImageUrl(image)}
+          radius="md"
+          size="100%"
+          style={{ aspectRatio: '1 / 1' }}
+        >
           {fallback}
         </Avatar>
       </Card.Section>
