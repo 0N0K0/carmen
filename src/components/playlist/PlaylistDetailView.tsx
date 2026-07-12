@@ -1,8 +1,23 @@
-import { Avatar, Badge, Button, Flex, Skeleton, Stack, Table, Text, Title, Tooltip } from '@mantine/core';
+import {
+  Avatar,
+  Badge,
+  Button,
+  Flex,
+  Skeleton,
+  Stack,
+  Table,
+  Text,
+  Title,
+  Tooltip,
+} from '@mantine/core';
 import { HeartIcon, PlayIcon } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 import type { PlaylistTrack } from '../../hooks/useDetail';
-import { formatTotalDuration, formatTrackDuration, toProxiedImageUrl } from '../../utils';
+import {
+  formatTotalDuration,
+  formatTrackDuration,
+  toProxiedImageUrl,
+} from '../../utils';
 
 const SKELETON_TRACK_ROWS = 8;
 
@@ -80,7 +95,12 @@ export function PlaylistHeader({
         <Text fz="sm" c="dimmed">
           {tracksTotal} titres · {formatTotalDuration(durationSeconds)}
         </Text>
-        <Button leftSection={<PlayIcon weight="fill" />} radius="xl" w="fit-content" mt="sm">
+        <Button
+          leftSection={<PlayIcon weight="fill" />}
+          radius="xl"
+          w="fit-content"
+          mt="sm"
+        >
           Lire tout
         </Button>
       </Stack>
@@ -99,24 +119,19 @@ export function TracklistTable({ tracks }: { tracks: PlaylistTrack[] }) {
     <Table verticalSpacing="xs" highlightOnHover>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th>#</Table.Th>
           <Table.Th></Table.Th>
           <Table.Th>Titre</Table.Th>
+          <Table.Th></Table.Th>
           <Table.Th>Artiste</Table.Th>
           <Table.Th>Album</Table.Th>
           <Table.Th ta="right">Durée</Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
-        {tracks.map((track, index) => (
+        {tracks.map((track) => (
           <Table.Tr key={track.id}>
-            <Table.Td>{index + 1}</Table.Td>
             <Table.Td>
-              {track.isFavorite && (
-                <Tooltip label="Coup de cœur">
-                  <HeartIcon weight="fill" color="var(--mantine-color-error-6)" />
-                </Tooltip>
-              )}
+              <Avatar src={toProxiedImageUrl(track.album?.cover)} radius="sm" size="sm" />
             </Table.Td>
             <Table.Td>
               <Flex align="center" gap={6}>
@@ -130,9 +145,21 @@ export function TracklistTable({ tracks }: { tracks: PlaylistTrack[] }) {
                 )}
               </Flex>
             </Table.Td>
+            <Table.Td>
+              {track.isFavorite && (
+                <Tooltip label="Coup de cœur">
+                  <HeartIcon
+                    weight="fill"
+                    color="var(--mantine-color-error-6)"
+                  />
+                </Tooltip>
+              )}
+            </Table.Td>
             <Table.Td>{track.artist?.name}</Table.Td>
             <Table.Td>{track.album?.title}</Table.Td>
-            <Table.Td ta="right">{formatTrackDuration(track.duration)}</Table.Td>
+            <Table.Td ta="right">
+              {formatTrackDuration(track.duration)}
+            </Table.Td>
           </Table.Tr>
         ))}
       </Table.Tbody>
