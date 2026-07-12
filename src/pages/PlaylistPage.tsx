@@ -15,7 +15,7 @@ import { HeartIcon, PlayIcon, PlaylistIcon } from '@phosphor-icons/react';
 import { useParams } from 'react-router-dom';
 import type { PlaylistTrack } from '../hooks/useDetail';
 import { usePlaylist } from '../hooks/useDetail';
-import { formatTotalDuration, formatTrackDuration } from '../utils';
+import { formatTotalDuration, formatTrackDuration, toProxiedImageUrl } from '../utils';
 
 const SKELETON_TRACK_ROWS = 8;
 
@@ -81,7 +81,7 @@ export function PlaylistPage() {
     <Box p="md">
       <Stack gap="xl">
         <Flex gap="lg" align="flex-end">
-          <Avatar src={playlist.picture} radius="md" w={180} h={180}>
+          <Avatar src={toProxiedImageUrl(playlist.picture)} radius="md" w={180} h={180}>
             <PlaylistIcon size={64} />
           </Avatar>
           <Stack gap={4} style={{ flex: 1 }}>

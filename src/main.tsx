@@ -7,12 +7,13 @@ import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
+import { API_BASE_URL } from './config.ts';
 import { resolver, theme } from './theme/theme.ts';
 
 const colorSchemeManager = localStorageColorSchemeManager({ key: 'carmen-color-scheme' });
 
 const client = new ApolloClient({
-  uri: 'http://localhost:4000/graphql',
+  uri: `${API_BASE_URL}/graphql`,
   cache: new InMemoryCache(),
 });
 
