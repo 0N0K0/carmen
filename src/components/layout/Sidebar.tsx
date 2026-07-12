@@ -55,10 +55,96 @@ interface SidebarLibraryItem {
   image?: string | null;
   /** Icône propre à l'élément — utilisée par l'onglet "Tout" qui mélange plusieurs types. */
   icon?: React.ReactNode;
+  /** Route de navigation au clic (ex. `/playlist/123`). Optionnel — ligne non cliquable si absent. */
+  to?: string;
 }
 
 /** Mode d'affichage d'une liste de bibliothèque dans la sidebar. */
 type SidebarLibraryView = 'list' | 'grid';
+
+/**
+ * Cellule de grille pour un élément de la sidebar : vignette + libellé,
+ * navigable si `item.to` est fourni.
+ * @param {SidebarLibraryItem} props.item Élément à afficher.
+ * @param {React.ReactNode} props.fallbackIcon Icône affichée si pas d'image et pas d'`item.icon`.
+ * @returns {JSX.Element} Cellule de grille.
+ */
+function SidebarGridCell({
+  item,
+  fallbackIcon,
+}: {
+  item: SidebarLibraryItem;
+  fallbackIcon: React.ReactNode;
+}) {
+  const content = (
+    <>
+      <Avatar src={item.image} radius="sm" size="100%" style={{ aspectRatio: '1 / 1' }}>
+        {item.icon ?? fallbackIcon}
+      </Avatar>
+      <Text fz="xs" ta="center" lineClamp={1} w="100%">
+        {item.label}
+      </Text>
+    </>
+  );
+
+  if (item.to) {
+    return (
+      <Link to={item.to} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Stack gap={4} align="center">
+          {content}
+        </Stack>
+      </Link>
+    );
+  }
+
+  return (
+    <Stack gap={4} align="center">
+      {content}
+    </Stack>
+  );
+}
+
+/**
+ * Ligne de liste pour un élément de la sidebar : vignette + libellé,
+ * navigable si `item.to` est fourni.
+ * @param {SidebarLibraryItem} props.item Élément à afficher.
+ * @param {React.ReactNode} props.fallbackIcon Icône affichée si pas d'image et pas d'`item.icon`.
+ * @returns {JSX.Element} Ligne de liste.
+ */
+function SidebarListRow({
+  item,
+  fallbackIcon,
+}: {
+  item: SidebarLibraryItem;
+  fallbackIcon: React.ReactNode;
+}) {
+  const content = (
+    <>
+      <Avatar src={item.image} size="sm" radius="sm">
+        {item.icon ?? fallbackIcon}
+      </Avatar>
+      <Text fz="sm" lineClamp={1}>
+        {item.label}
+      </Text>
+    </>
+  );
+
+  if (item.to) {
+    return (
+      <Link to={item.to} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Flex align="center" gap="xs">
+          {content}
+        </Flex>
+      </Link>
+    );
+  }
+
+  return (
+    <Flex align="center" gap="xs">
+      {content}
+    </Flex>
+  );
+}
 
 /**
  * Liste compacte d'éléments de bibliothèque pour la sidebar : skeleton
@@ -123,19 +209,7 @@ function SidebarLibraryList({
       >
         <SimpleGrid cols={3} spacing="xs" verticalSpacing="xs">
           {items.map((item) => (
-            <Stack key={item.id} gap={4} align="center">
-              <Avatar
-                src={item.image}
-                radius="sm"
-                size="100%"
-                style={{ aspectRatio: '1 / 1' }}
-              >
-                {item.icon ?? fallbackIcon}
-              </Avatar>
-              <Text fz="xs" ta="center" lineClamp={1} w="100%">
-                {item.label}
-              </Text>
-            </Stack>
+            <SidebarGridCell key={item.id} item={item} fallbackIcon={fallbackIcon} />
           ))}
         </SimpleGrid>
       </ScrollArea>
@@ -146,14 +220,7 @@ function SidebarLibraryList({
     <ScrollArea style={{ flex: 1, minHeight: 0 }} type="auto" offsetScrollbars>
       <Stack gap={2}>
         {items.map((item) => (
-          <Flex key={item.id} align="center" gap="xs">
-            <Avatar src={item.image} size="sm" radius="sm">
-              {item.icon ?? fallbackIcon}
-            </Avatar>
-            <Text fz="sm" lineClamp={1}>
-              {item.label}
-            </Text>
-          </Flex>
+          <SidebarListRow key={item.id} item={item} fallbackIcon={fallbackIcon} />
         ))}
       </Stack>
     </ScrollArea>
@@ -272,6 +339,7 @@ function SidebarNormal({
         label: p.title,
         image: p.picture,
         icon: <PlaylistIcon />,
+        to: `/playlist/${p.id}`,
       }),
     ),
     ...albums.map(
@@ -515,6 +583,7 @@ function SidebarNormal({
                             id: p.id,
                             label: p.title,
                             image: p.picture,
+                            to: `/playlist/${p.id}`,
                           }),
                         )}
                         loading={playlistsLoading}

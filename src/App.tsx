@@ -7,6 +7,7 @@ import { LibraryLayout } from './pages/library/LibraryLayout';
 import { LibraryLovedPage } from './pages/library/LibraryLovedPage';
 import { LibraryOverviewPage } from './pages/library/LibraryOverviewPage';
 import { LibraryPlaylistsPage } from './pages/library/LibraryPlaylistsPage';
+import { PlaylistPage } from './pages/PlaylistPage';
 
 const router = createBrowserRouter([
   {
@@ -14,6 +15,7 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { index: true, element: <HomePage /> },
+      { path: 'playlist/:id', element: <PlaylistPage /> },
       {
         path: 'library',
         element: <LibraryLayout />,

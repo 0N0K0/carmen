@@ -29,6 +29,7 @@ export function LibraryOverviewPage() {
             image={playlist.picture}
             fallback={<PlaylistIcon />}
             title={playlist.title}
+            to={`/playlist/${playlist.id}`}
           />
         ))}
       </LibraryCarouselSection>
