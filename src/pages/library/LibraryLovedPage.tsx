@@ -1,62 +1,68 @@
-import { HeartIcon } from '@phosphor-icons/react';
-import { useState } from 'react';
+import { Box, Button, Flex, Skeleton, Stack, Text, Title } from '@mantine/core';
+import { PlayIcon } from '@phosphor-icons/react';
+import { TracklistSkeleton, TracklistTable } from '../../components/playlist/PlaylistDetailView';
 import { usePlaylist } from '../../hooks/useDetail';
-import type { LibrarySortOrder } from '../../hooks/useLibrary';
+import type { PlaylistTrack } from '../../hooks/useDetail';
 import { useAllPlaylists, useLibraryStats } from '../../hooks/useLibrary';
-import { LibraryItemCard, LibrarySection } from './components';
-import { formatLibraryTitle } from './utils';
+import { formatTotalDuration } from '../../utils';
 
 /**
- * Page des coups de cœur : tracks de la playlist spéciale Deezer
- * marquée `isLovedTrack`, triable par titre. Aucune query dédiée côté
- * backend pour la liste — la playlist est repérée parmi celles déjà
- * chargées, puis son détail (tracks) est récupéré via `usePlaylist`. Le
- * compte affiché dans le titre vient de `libraryStats` (total réel côté
- * API) : la playlist spéciale peut être tronquée en base par la sync, sans
- * rapport avec le nombre réel de coups de cœur.
+ * Page des coups de cœur : tracks de la playlist spéciale Deezer marquée
+ * `isLovedTrack`. Le titre "Bibliothèque" et la navigation sont déjà rendus
+ * par `LibraryLayout` — cette page n'affiche que le compte + durée totale,
+ * le bouton "Lire tout" et la tracklist (pas de cover/titre dupliqués).
+ *
+ * Aucune query dédiée côté backend pour la liste — la playlist est repérée
+ * parmi celles déjà chargées, puis son détail (tracks) est récupéré via
+ * `usePlaylist`. Le nombre de titres vient de `libraryStats` (total réel
+ * côté API) : la playlist spéciale peut être tronquée en base par la sync,
+ * sans rapport avec le nombre réel de coups de cœur — la durée totale, elle,
+ * reste celle de la playlist telle que synchronisée.
  * @returns {JSX.Element} Page coups de cœur.
  */
 export function LibraryLovedPage() {
-  const [sort, setSort] = useState<LibrarySortOrder>('ASC');
   const { playlists, loading: playlistsLoading } = useAllPlaylists();
   const lovedPlaylist = playlists.find((p) => p.isLovedTrack);
-  const { playlist, loading: tracksLoading } = usePlaylist(lovedPlaylist?.id);
+  const { playlist, tracksTotal, loading: tracksLoading } = usePlaylist(lovedPlaylist?.id);
   const { stats } = useLibraryStats();
 
-  const tracks = (
-    (playlist?.tracks ?? []) as {
-      id: string;
-      title: string;
-      artist?: { name: string } | null;
-      album?: { cover?: string | null } | null;
-    }[]
-  )
-    .slice()
-    .sort((a, b) => a.title.localeCompare(b.title) * (sort === 'ASC' ? 1 : -1));
+  const loading = playlistsLoading || tracksLoading || !playlist;
+
+  if (loading) {
+    return (
+      <Box p="md">
+        <Stack gap="xl">
+          <Flex align="center" gap="md">
+            <Skeleton h={16} w={220} />
+            <Skeleton h={36} w={140} radius="xl" />
+          </Flex>
+          <TracklistSkeleton />
+        </Stack>
+      </Box>
+    );
+  }
+
+  const tracks = playlist.tracks as PlaylistTrack[];
+  const count = stats?.favoriteTracksTotal ?? tracksTotal ?? tracks.length;
 
   return (
-    <LibrarySection
-      title={formatLibraryTitle(
-        stats?.favoriteTracksTotal,
-        'coup de cœur',
-        'Coups de cœur',
-        'coups de cœur',
-      )}
-      loading={playlistsLoading || tracksLoading}
-      emptyIcon={<HeartIcon size={32} />}
-      emptyMessage="Aucun coup de cœur."
-      sort={sort}
-      onToggleSort={() => setSort((s) => (s === 'ASC' ? 'DESC' : 'ASC'))}
-    >
-      {tracks.map((track) => (
-        <LibraryItemCard
-          key={track.id}
-          image={track.album?.cover}
-          fallback={<HeartIcon />}
-          title={track.title}
-          subtitle={track.artist?.name}
-        />
-      ))}
-    </LibrarySection>
+    <Box p="md">
+      <Stack gap="xl">
+        <Stack gap={4}>
+          <Flex align="center" gap="md">
+            <Title order={2} fz="lg">
+              {count} coups de cœur
+            </Title>
+            <Button leftSection={<PlayIcon weight="fill" />} radius="xl">
+              Lire tout
+            </Button>
+          </Flex>
+          <Text fz="sm" c="dimmed">
+            {formatTotalDuration(playlist.duration ?? 0)}
+          </Text>
+        </Stack>
+        <TracklistTable tracks={tracks} />
+      </Stack>
+    </Box>
   );
 }
